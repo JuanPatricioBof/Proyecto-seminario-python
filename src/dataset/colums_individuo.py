@@ -39,5 +39,43 @@ def generate_columna_NIVEL_ED_str(path_individual):
         writer.writeheader()
         writer.writerows(filas)
 
- 
+
+
+def generate_columna_CONDICION_LABORAL(path_individual):
+    """Agrega una columna llamada CONDICION_LABORAL con valores de texto según las reglas dadas."""
+
+    with path_individual.open('r', encoding='utf-8') as file_csv:
+        reader = csv.DictReader(file_csv, delimiter=';')
+        fieldnames = reader.fieldnames
+
+        if "CONDICION_LABORAL" not in fieldnames:
+            fieldnames.append("CONDICION_LABORAL")
+
+        filas = []
+        for row in reader:
+            estado = row['ESTADO']
+            cat_ocup = row['CAT_OCUP']
+
+            if estado == '1' and cat_ocup in ('1', '2'):
+                row['CONDICION_LABORAL'] = "Ocupado autónomo"
+            elif estado == '1' and cat_ocup in ('3', '4', '9'):
+                row['CONDICION_LABORAL'] = "Ocupado dependiente"
+            elif estado == '2':
+                row['CONDICION_LABORAL'] = "Desocupado"
+            elif estado == '3':
+                row['CONDICION_LABORAL'] = "Inactivo"
+            elif estado == '4':
+                row['CONDICION_LABORAL'] = "Fuera de categoría/sin información"
+            else:
+                row['CONDICION_LABORAL'] = "Sin información"
+
+            filas.append(row)
+
+    with path_individual.open('w', newline='', encoding='utf-8') as file_csv:
+        writer = csv.DictWriter(file_csv, fieldnames=fieldnames, delimiter=';')
+        writer.writeheader()
+        writer.writerows(filas)
+
+
+
 
