@@ -1,5 +1,6 @@
 #files/data_eph
-files/data_out
+files/data_out/usu_hogar.csv
+files/data_out/usu_individual.csv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
