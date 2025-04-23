@@ -8,17 +8,17 @@ def join_data(encuesta):
 
     # generar path al archivo único e identificar que escuesta estoy unificando
     if encuesta == "hogar":
-        path_archivo_unico = DATA_OUT_PATH / "usu_hogar.csv"
+        path_archivos_unidos = DATA_OUT_PATH / "usu_hogar.csv"
         patron_nombre = "usu_hogar_*"
     else:
-        path_archivo_unico = DATA_OUT_PATH / "usu_individual.csv"
+        path_archivos_unidos = DATA_OUT_PATH / "usu_individual.csv"
         patron_nombre = "usu_individual_*"
     
     # Para controlar que el encabezado se escriba una sola vez
     se_escribio_encabezado = False  
     
     # abro el archivo único para escribirlo
-    with path_archivo_unico.open('w', newline="", encoding = "utf-8") as salida:
+    with path_archivos_unidos.open('w', newline="", encoding = "utf-8") as salida:
 
         writer = csv.writer(salida, delimiter=';')
 
@@ -34,9 +34,12 @@ def join_data(encuesta):
                     print(f"Procesando: {path_archivo.name}")   #debug
 
                     reader = csv.reader(entrada, delimiter=';')     #genero iterable
-
-                    header = next(reader)   #separo encabezado
-                    
+                    try:
+                       header = next(reader)   #separo encabezado
+                    except StopIteration:
+                          print(f"El archivo {path_archivo.name} está vacío.")
+                          continue
+                
                     if not se_escribio_encabezado:
                         writer.writerow(header)
                         se_escribio_encabezado = True
