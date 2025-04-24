@@ -2,11 +2,11 @@
 """
 import csv
 from utils.constants import diccionario_aglomerados
-def informar_aglomerado_punto6(path_hogar):
+def informar_aglomerado_punto6(path_procesado):
 #Informar el nombre del  aglomerado con mayor cantidad de viviendas con más de dos ocupantes  sin baño. Informar también la cantidad de ellas.
  
 # 1. Abrir el archivo y leer el contenido:
-  with path_hogar.open('r',encoding='utf-8') as file_csv:
+  with path_procesado.open('r',encoding='utf-8') as file_csv:
         reader=csv.DictReader(file_csv,delimiter=';')
         fieldnames=reader.fieldnames
         #2. Inicializar un diccionario para contar las viviendas sin baño por aglomerado:
