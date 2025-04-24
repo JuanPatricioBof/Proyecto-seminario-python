@@ -2,41 +2,33 @@
 
 import csv
 
-def generate_column_CH04_str(path_individual):
+def generar_columna_CH04_str(path_original, path_nuevo):
     """Se traduce los valores CH04 numéricos a "Masculino" y "Femenino" según corresponda. El resultado se debe 
     almacenar en una nueva columna llamada CH04_str.
+    Recorre el archivo original y guarda cada linea, con la nueva columna, en una variable auxliar.
+    Luego abre el archivo nuevo y carga con esta variable.
        """
-    """
-    Si querés modificar el archivo original, lo más seguro es:
-        -Escribir en un archivo temporal.
-        -Luego sobrescribir el original con ese archivo modificado.
-    Pero acá lo hago sobrescribiendo sin archivo temporal, 
-        -leo el contenido
-        -genero el nuevo
-        -abro nuevamente y lo sobreescribo
-    el problema de esta forma es que no es eficiente para un archivo muy grande ya que utiliza mucha ram, 
-    porque el generado lo guarda en memoria, osea en ram
-    """
     # leo el contenido y genero los datos nuevos en la memoria
-    with path_individual.open('r', encoding='utf-8') as file_csv:
+    with path_original.open('r', encoding='utf-8') as entrada:
 
-        reader = csv.DictReader(file_csv, delimiter=';')
-        fieldnames = reader.fieldnames
-
+        reader = csv.DictReader(entrada, delimiter=';')
+        fieldnames = reader.fieldnames  # obtiene el encabezado
+        print(fieldnames)
         # Agrego la nueva columna si no está
         if "CH04_str" not in fieldnames:
             fieldnames.append("CH04_str")
         
-        filas = [] # para guargar los datos nuevos
+        #cargo todos los datos en una lista que representan las las filas del archivo
+        filas = [] 
         for row in reader:
             row['CH04_str'] = ('Masculino' if row['CH04']=='1' else 'Femenino')
             filas.append(row)
     
-    # Sobrescribir el archivo con los datos nuevos
-    with path_individual.open('w', newline = "", encoding='utf-8')as file_csv:
-        writer = csv.DictWriter(file_csv, fieldnames=fieldnames, delimiter=";")
+    # cargo los datos nuevos en el archivo nuevo de invividual
+    with path_nuevo.open('w', newline = "", encoding='utf-8')as salida:
+        writer = csv.DictWriter(salida, fieldnames=fieldnames, delimiter=";")
         writer.writeheader()
         writer.writerows(filas)
 
-    print("✅ Se agregó la columna CH04_str con valores traducidos.")
+    print("✅ Se agregó la columna CH04_str.")
     
