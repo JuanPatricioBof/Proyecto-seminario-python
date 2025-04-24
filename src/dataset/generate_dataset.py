@@ -3,6 +3,10 @@ from src.utils.constants import DATA_PATH, DATA_OUT_PATH
 
 import csv
 
+import src.dataset.colums_individuo as generar_individuo
+
+import src.dataset.colums_hogar as generar_hogar
+
 def join_data(encuesta):
     """genera un único archivo csv, puede ser de hogares o individuos"""
 
@@ -46,3 +50,27 @@ def join_data(encuesta):
 
                     for row in reader:
                         writer.writerow(row)
+
+def generar_columnas_individual():
+    """En esta función agrego columnas nuevas al dataset unido de individual.
+    La primera columna que agrego lo hago a partir del original y el nuevo.
+    El resto lo sobreescribo en el nuevo.
+    """
+    PATH_ARCHIVO_ORIGINAL = DATA_OUT_PATH / "usu_hogar.csv"
+    PATH_ARCHIVO_PROCESADO = DATA_OUT_PATH / "hogar_process.csv"
+    
+    #llamo a funciones de agregar columnas
+    # generar_individuo.generar_columna_CH04(PATH_ARCHIVO_ORIGINAL, PATH_ARCHIVO_PROCESADO )
+    # generar_individuo.generar_columna_X(PATH_ARCHIVO_PROCESADO)
+
+def generar_columnas_hogar():
+    """En esta función agrego columnas nuevas al dataset unido hogar.
+    La primera columna que agrego lo hago a partir del original y el nuevo.
+    El resto lo sobreescrivo en el nuevo.
+    """
+    PATH_ARCHIVO_ORIGINAL = DATA_OUT_PATH / "usu_hogar.csv"
+    PATH_ARCHIVO_PROCESADO = DATA_OUT_PATH / "hogar_process.csv"
+    
+    #llamo a funciones de agregar columnas
+    # generar_hogar.generar_columna_TIPO_HOGAR(PATH_ARCHIVO_ORIGINAL, PATH_ARCHIVO_PROCESADO )
+    # generar_hogar.generar_columna_X(PATH_ARCHIVO_PROCESADO)
