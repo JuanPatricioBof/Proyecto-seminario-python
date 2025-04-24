@@ -72,5 +72,5 @@ def generar_columnas_hogar():
     PATH_ARCHIVO_PROCESADO = DATA_OUT_PATH / "hogar_process.csv"
     
     #llamo a funciones de agregar columnas
-    # generar_hogar.generar_columna_TIPO_HOGAR(PATH_ARCHIVO_ORIGINAL, PATH_ARCHIVO_PROCESADO )
-    # generar_hogar.generar_columna_X(PATH_ARCHIVO_PROCESADO)
+    generar_hogar.generate_column_tipo_hogar(PATH_ARCHIVO_ORIGINAL, PATH_ARCHIVO_PROCESADO )    
+    generar_hogar.generate_column_material_techumbre(PATH_ARCHIVO_PROCESADO)
