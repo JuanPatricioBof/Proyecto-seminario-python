@@ -1,11 +1,11 @@
 import csv
-def generate_column_tipo_hogar(path_hogar):
+def generate_column_tipo_hogar(PATH_ARCHIVO_ORIGINAL, PATH_ARCHIVO_PROCESADO):
     #Se debe generar una nueva columna llamada TIPO_HOGAR que indica el tipo de hogar:
    #"Unipersonal" (una persona).
     #"Nuclear" (2 a 4 personas).
      #"Extendido" (5 o más personas).
 #Abrir el archivo y leer el contenido:
-  with path_hogar.open('r',encoding='utf-8') as file_csv:
+  with PATH_ARCHIVO_ORIGINAL.open('r',encoding='utf-8') as file_csv:
     reader=csv.DictReader(file_csv,delimiter=';')
     fieldnames=reader.fieldnames
 
@@ -24,19 +24,19 @@ def generate_column_tipo_hogar(path_hogar):
         filas.append(row)
 
     # Sobrescribir el archivo con los datos nuevos
-  with path_hogar.open('w', newline = "", encoding='utf-8')as file_csv:
+  with PATH_ARCHIVO_PROCESADO.open('w', newline = "", encoding='utf-8')as file_csv:
         writer = csv.DictWriter(file_csv, fieldnames=fieldnames, delimiter=';')
         writer.writeheader()
         writer.writerows(filas)
   print("✅ Se agregó la columna tipo_hogar con valores traducidos.")
     
 
-def generate_column_material_techumbre(path_hogar):
+def generate_column_material_techumbre(PATH_ARCHIVO_PROCESADO):
 #Se debe generar una nueva columna llamada MATERIAL_TECHUMBRE que indica el tipo de hogar basado en el campo V4:
 #- 5 a 7: "Material precario".
 #- 1 a 4: "Material durable".
 # 9: “No aplica”.
-  with path_hogar.open('r',encoding='utf-8')as file_csv:
+  with PATH_ARCHIVO_PROCESADO.open('r',encoding='utf-8')as file_csv:
     reader=csv.DictReader(file_csv,delimiter=';')
     fieldnames=reader.fieldnames
 
@@ -52,7 +52,7 @@ def generate_column_material_techumbre(path_hogar):
         elif row['V4']=='9':
             row['material_techumbre']='No aplica'
         filas.append(row)
-  with path_hogar.open('w', newline = "", encoding='utf-8')as file_csv:
+  with PATH_ARCHIVO_PROCESADO.open('w', newline = "", encoding='utf-8')as file_csv:
         writer = csv.DictWriter(file_csv, fieldnames=fieldnames, delimiter=';')
         writer.writeheader()
         writer.writerows(filas)
