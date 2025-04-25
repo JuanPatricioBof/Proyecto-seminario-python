@@ -73,12 +73,13 @@ edad con secundario incompleto."""
 
 
 def informar_aglomerados_punto11(path_procesado):
+    # Pedir al usuario que seleccione un año
     anio = input("Ingrese el año que desea consultar: ")
     if not anio.isdigit():
         print("Por favor, ingrese un año válido.")
         return
 
-    datos = []
+    datos = []  # Guardar los datos del año consultado
     with path_procesado.open('r', encoding='utf-8') as file_csv:
         reader = csv.DictReader(file_csv, delimiter=';')
         for row in reader:
@@ -89,15 +90,20 @@ def informar_aglomerados_punto11(path_procesado):
         print(f"No hay datos cargados para el año {anio}.")
         return
 
+    # Obtener el trimestre más reciente del año
     ultimo_trimestre = max(int(row['TRIMESTRE']) for row in datos)
+
+    # Filtrar solo datos del último trimestre
     datos_ultimo_trimestre = [row for row in datos if int(row['TRIMESTRE']) == ultimo_trimestre]
 
+    # Contar viviendas totales y precarias por aglomerado
     viviendas_totales = {}
     viviendas_precarias = {}
 
     for row in datos_ultimo_trimestre:
         aglomerado = row['AGLOMERADO']
         tipo_material = row['material_techumbre'].strip().lower()
+
 
         if aglomerado not in viviendas_totales:
             viviendas_totales[aglomerado] = 0
@@ -107,18 +113,29 @@ def informar_aglomerados_punto11(path_procesado):
         if tipo_material == 'material precario':
             viviendas_precarias[aglomerado] += 1
 
+    # Calcular porcentajes
     porcentajes = {}
-    for aglo in viviendas_totales:
-        porcentaje = (viviendas_precarias[aglo] / viviendas_totales[aglo]) * 100
-        porcentajes[aglo] = porcentaje
+    for aglomerado in viviendas_totales:
+        porcentaje = (viviendas_precarias[aglomerado] / viviendas_totales[aglomerado]) * 100
+        porcentajes[aglomerado] = porcentaje
 
-    # ⚠️ NO filtramos por diccionario. Usamos todos los aglomerados con datos.
-    max_aglomerado = max(porcentajes, key=porcentajes.get)
-    min_aglomerado = min(porcentajes, key=porcentajes.get)
+    # Filtrar solo aglomerados válidos (que estén en el diccionario)
+    porcentajes_validos = {
+        aglo: porcentaje
+        for aglo, porcentaje in porcentajes.items()
+        if str(aglo) in diccionario_aglomerados
+    }
 
-    nombre_max = diccionario_aglomerados.get(str(max_aglomerado), f"DESCONOCIDO ({max_aglomerado})")
-    nombre_min = diccionario_aglomerados.get(str(min_aglomerado), f"DESCONOCIDO ({min_aglomerado})")
+    if not porcentajes_validos:
+        print("No se encontraron aglomerados válidos con nombre para mostrar.")
+        return
+
+    max_aglomerado = max(porcentajes_validos, key=porcentajes_validos.get)
+    min_aglomerado = min(porcentajes_validos, key=porcentajes_validos.get)
+
+    nombre_max = diccionario_aglomerados[str(max_aglomerado)]
+    nombre_min = diccionario_aglomerados[str(min_aglomerado)]
 
     print(f"\nTrimestre analizado: {ultimo_trimestre} del año {anio}")
-    print(f"El aglomerado con mayor porcentaje de viviendas de material precario es {nombre_max} con: ({porcentajes[max_aglomerado]:.2f}%)")
-    print(f"El aglomerado con menor porcentaje de viviendas de material precario es {nombre_min} con: ({porcentajes[min_aglomerado]:.2f}%)")
+    print(f"El aglomerado con mayor porcentaje de viviendas de material precario es {nombre_max} con : ({porcentajes_validos[max_aglomerado]:.2f}%)")
+    print(f"El aglomerado con menor porcentaje de viviendas de material precario es {nombre_min} con : ({porcentajes_validos[min_aglomerado]:.2f}%)")
