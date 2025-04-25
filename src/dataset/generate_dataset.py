@@ -56,11 +56,10 @@ def generar_columnas_individual():
     La primera columna que agrego lo hago a partir del original y el nuevo.
     El resto lo sobreescribo en el nuevo.
     """
-    PATH_ARCHIVO_ORIGINAL = DATA_OUT_PATH / "usu_hogar.csv"
-    PATH_ARCHIVO_PROCESADO = DATA_OUT_PATH / "hogar_process.csv"
+    PATH_ARCHIVO_ORIGINAL = DATA_OUT_PATH / "usu_individual.csv"
+    PATH_ARCHIVO_PROCESADO = DATA_OUT_PATH / "individual_process.csv"
     
-    #llamo a funciones de agregar columnas
-    # generar_individuo.generar_columna_CH04(PATH_ARCHIVO_ORIGINAL, PATH_ARCHIVO_PROCESADO )
+    generar_individuo.generar_columna_CH04_str(PATH_ARCHIVO_ORIGINAL, PATH_ARCHIVO_PROCESADO )
     # generar_individuo.generar_columna_X(PATH_ARCHIVO_PROCESADO)
 
 def generar_columnas_hogar():
