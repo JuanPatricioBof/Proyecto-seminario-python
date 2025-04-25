@@ -36,7 +36,7 @@ def generate_column_material_techumbre(PATH_ARCHIVO_PROCESADO):
 #- 5 a 7: "Material precario".
 #- 1 a 4: "Material durable".
 # 9: “No aplica”.
-  with PATH_ARCHIVO_PROCESADO.open('r',encoding='utf-8')as file_csv:
+ with PATH_ARCHIVO_PROCESADO.open('r',encoding='utf-8')as file_csv:
     reader=csv.DictReader(file_csv,delimiter=';')
     fieldnames=reader.fieldnames
 
@@ -45,15 +45,16 @@ def generate_column_material_techumbre(PATH_ARCHIVO_PROCESADO):
         fieldnames.append('material_techumbre')
     filas=[]
     for row in reader:
-        if row['V4'] in ['5','6','7']:
+        if row['V4'].strip() in ['5','6','7']:
             row['material_techumbre']='Material precario'
-        elif row['V4'] in ['1','2','3','4']:
+        elif row['V4'].strip() in ['1','2','3','4']:
             row['material_techumbre']='Material durable'
-        elif row['V4']=='9':
+        elif row['V4'].strip()=='9':
             row['material_techumbre']='No aplica'
+        
         filas.append(row)
-  with PATH_ARCHIVO_PROCESADO.open('w', newline = "", encoding='utf-8')as file_csv:
+ with PATH_ARCHIVO_PROCESADO.open('w', newline = "", encoding='utf-8')as file_csv:
         writer = csv.DictWriter(file_csv, fieldnames=fieldnames, delimiter=';')
         writer.writeheader()
         writer.writerows(filas)
-  print("✅ Se agregó la columna material_techumbre con valores traducidos.")
+print("✅ Se agregó la columna material_techumbre con valores traducidos.")
