@@ -13,7 +13,7 @@ def generar_columna_CH04_str(path_original, path_nuevo):
 
         reader = csv.DictReader(entrada, delimiter=';')
         fieldnames = reader.fieldnames  # obtiene el encabezado
-        print(fieldnames)
+        
         # Agrego la nueva columna si no está
         if "CH04_str" not in fieldnames:
             fieldnames.append("CH04_str")
