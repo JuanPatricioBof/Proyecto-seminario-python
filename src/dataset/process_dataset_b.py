@@ -4,21 +4,24 @@ import csv
 
 from src.utils.constants import diccionario_aglomerados
 
-def tabla_porcentaje(file_csv_individuos):
+def tabla_porcentaje_10B(file_csv_individuos):
     """Pedir al usuario que seleccione dos aglomerados y a partir de la información
 contenida retornar una tabla que contenga el porcentaje de personas mayores de
 edad con secundario incompleto."""
+
+    #muestro al usuario las opciones de aglomerado (imprimo diccionario de codigo:nombre)
     salida = ''
     for key in diccionario_aglomerados:
         salida += f'{key}: {diccionario_aglomerados[key]}, '     
     print(salida)
-
-    aglo_A = input("Ingrese código de aglomerado:_")
-    aglo_B = input("Ingrese código de aglomerado:_")
+    
+    #pido al usuario que ingrese data
+    aglo_A = input("Ingrese código de aglomerado:_").zfill(2)
+    aglo_B = input("Ingrese código de aglomerado:_").zfill(2)
 
     tabla = {}
 
-    # Procesar el archivo
+    # recorro el archivo procesado 
     print("Procesando archivo...")
 
     with file_csv_individuos.open('r', encoding='utf-8')as archivo:
@@ -29,8 +32,8 @@ edad con secundario incompleto."""
             aglo = row['AGLOMERADO']
             cantidad = int(row['PONDERA'])
             
-            # si el aglomerado ingresado coincide con el de la fila
-            if(aglo == aglo_A or aglo == aglo_B ):
+            # si es el aglomerado ingresado --> proceso
+            if(aglo == aglo_A.lstrip("0") or aglo == aglo_B.lstrip("0") ):
                 año = row['ANO4']
                 trimestre = row['TRIMESTRE']
 
@@ -42,26 +45,30 @@ edad con secundario incompleto."""
                     tabla[año][trimestre] = {}
 
                 if aglo not in tabla[año][trimestre]:
-                    tabla[año][trimestre][aglo_A] = {'total': 0, 'cumple': 0, 'porcentaje': 0.0}
-                    tabla[año][trimestre][aglo_B] = {'total': 0, 'cumple': 0, 'porcentaje': 0.0}
+                    tabla[año][trimestre][aglo_A.lstrip("0")] = {'total': 0, 'cumple': 0, 'porcentaje': 0.0}
+                    tabla[año][trimestre][aglo_B.lstrip("0")] = {'total': 0, 'cumple': 0, 'porcentaje': 0.0}
                 
-                # sumo los datos
+                # sumo el total de aglomerados
                 tabla[año][trimestre][aglo]['total'] += cantidad
-
-                if (row['NIVEL_ED_str'] == 'Secundario incompleto') and ( int( row['CH06'] ) > 60 ):
+                # sumo los aglomerados que cumplen
+                #if (row['NIVEL_ED_str'] == 'Secundario incompleto') and ( int( row['CH06'] ) > 60 ):
+                if (row['NIVEL_ED'] == '3') and ( int( row['CH06'] ) > 60 ):
                     tabla[año][trimestre][aglo]['cumple'] += cantidad
 
-    # calcular porcentaje
+    # calculo el porcentaje de aglomerado para cada trimestre y año
     print("Calculando porcentaje...")
     for año in tabla:
         for trimestre in tabla[año]:
             for aglo in tabla[año][trimestre]:
-                calculo = (tabla[año][trimestre][aglo]['cumple'] / tabla[año][trimestre][aglo]['total']) * 100
-                tabla[año][trimestre][aglo]['porcentaje'] = round(calculo,2)
+                total = tabla[año][trimestre][aglo]['total']
+                if total != 0 : 
+                    cumple = tabla[año][trimestre][aglo]['cumple']
+                    calculo = (cumple / total) * 100
+                    tabla[año][trimestre][aglo]['porcentaje'] = round(calculo,2)
 
     # mostrar informacion
     print("Mostrar información...")    
-
+    # imprimo encabezado de tabla
     print(f'Año    Trimestre   {diccionario_aglomerados[aglo_A]}     {diccionario_aglomerados[aglo_B]}') 
     
     for año in sorted(tabla):

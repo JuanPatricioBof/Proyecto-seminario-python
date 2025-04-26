@@ -1,8 +1,5 @@
-#files/data_eph
-files/data_out/usu_hogar.csv
-files/data_out/usu_individual.csv
-files/data_out/individual_process.csv
-files/data_out/hogar_process.csv
+# Ignora todo dentro de una carpeta
+files/data_out/*  
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
