@@ -1,5 +1,7 @@
 # Ignora todo dentro de una carpeta
 files/data_out/*  
+# menos .gitkeep, para q la carpeta se suba al repositorio 
+!files/data_out/.gitkeep
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
