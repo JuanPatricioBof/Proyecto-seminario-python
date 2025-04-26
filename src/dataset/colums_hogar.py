@@ -1,11 +1,11 @@
 import csv
-def generate_column_tipo_hogar(PATH_ARCHIVO_ORIGINAL, PATH_ARCHIVO_PROCESADO):
+def generate_column_tipo_hogar(path_normal, path_nuevo):
     #Se debe generar una nueva columna llamada TIPO_HOGAR que indica el tipo de hogar:
    #"Unipersonal" (una persona).
     #"Nuclear" (2 a 4 personas).
      #"Extendido" (5 o más personas).
 #Abrir el archivo y leer el contenido:
-  with PATH_ARCHIVO_ORIGINAL.open('r',encoding='utf-8') as file_csv:
+  with path_normal.open('r',encoding='utf-8') as file_csv:
     reader=csv.DictReader(file_csv,delimiter=';')
     fieldnames=reader.fieldnames
 
@@ -24,19 +24,19 @@ def generate_column_tipo_hogar(PATH_ARCHIVO_ORIGINAL, PATH_ARCHIVO_PROCESADO):
         filas.append(row)
 
     # Sobrescribir el archivo con los datos nuevos
-  with PATH_ARCHIVO_PROCESADO.open('w', newline = "", encoding='utf-8')as file_csv:
+  with path_nuevo.open('w', newline = "", encoding='utf-8')as file_csv:
         writer = csv.DictWriter(file_csv, fieldnames=fieldnames, delimiter=';')
         writer.writeheader()
         writer.writerows(filas)
   print("✅ Se agregó la columna tipo_hogar con valores traducidos.")
     
 
-def generate_column_material_techumbre(PATH_ARCHIVO_PROCESADO):
+def generate_column_material_techumbre(path_nuevo):
 #Se debe generar una nueva columna llamada MATERIAL_TECHUMBRE que indica el tipo de hogar basado en el campo V4:
 #- 5 a 7: "Material precario".
 #- 1 a 4: "Material durable".
 # 9: “No aplica”.
- with PATH_ARCHIVO_PROCESADO.open('r',encoding='utf-8')as file_csv:
+ with path_nuevo.open('r',encoding='utf-8')as file_csv:
     reader=csv.DictReader(file_csv,delimiter=';')
     fieldnames=reader.fieldnames
 
@@ -53,7 +53,7 @@ def generate_column_material_techumbre(PATH_ARCHIVO_PROCESADO):
             row['material_techumbre']='No aplica'
         
         filas.append(row)
- with PATH_ARCHIVO_PROCESADO.open('w', newline = "", encoding='utf-8')as file_csv:
+ with path_nuevo.open('w', newline = "", encoding='utf-8')as file_csv:
         writer = csv.DictWriter(file_csv, fieldnames=fieldnames, delimiter=';')
         writer.writeheader()
         writer.writerows(filas)
