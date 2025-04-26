@@ -54,13 +54,50 @@ def informar_aglomerado_punto6(path_procesado):
             #4. Verificar si la vivienda tiene más de dos ocupantes y no tiene baño:
             if int(row['IX_TOT']) > 2 and row['IV8'] == '2':
                 aglomerado = row['AGLOMERADO']
+                pondera = int(row['PONDERA'])  # Número de hogares que respondieron lo mismo
+
+
                 #5. Contar la vivienda en el aglomerado correspondiente:
                 if aglomerado in aglomerado_contador:
-                    aglomerado_contador[aglomerado] += 1
+                     aglomerado_contador[aglomerado] += pondera
                 else:
-                    aglomerado_contador[aglomerado] = 1
+                     aglomerado_contador[aglomerado] = pondera
     #6. Encontrar el aglomerado con mayor cantidad de viviendas sin baño:
   max_aglomerado = max(aglomerado_contador, key=aglomerado_contador.get)
   max_count = aglomerado_contador[max_aglomerado]
   print(f"El aglomerado con mayor cantidad de viviendas sin baño y más de dos ocupantes es:{diccionario_aglomerados[str(max_aglomerado).zfill(2)]}({max_aglomerado}) con {max_count} viviendas.")
     
+def informar_nivel_universitario(path_procesado):
+    total_por_aglomerado = {}
+    universitarios_por_aglomerado = {}
+
+    with path_procesado.open('r', encoding='utf-8') as file_csv:
+        reader = csv.DictReader(file_csv, delimiter=';')
+        for row in reader:
+            aglomerado = row['AGLOMERADO']
+            nivel = row['NIVEL_ED'].strip()
+
+            if aglomerado not in total_por_aglomerado:
+                total_por_aglomerado[aglomerado] = 0
+                universitarios_por_aglomerado[aglomerado] = 0
+
+            total_por_aglomerado[aglomerado] += 1
+
+            if nivel in {'5', '6'}:  # Universitario incompleto o completo
+                universitarios_por_aglomerado[aglomerado] += 1
+
+    
+
+    print("\nPorcentaje de personas con nivel universitario o superior:\n")
+    for aglo in total_por_aglomerado:
+        if str(aglo) in diccionario_aglomerados:
+            total = total_por_aglomerado[aglo]
+            uni = universitarios_por_aglomerado[aglo]
+
+            # Si el total es mayor que 1, calculamos el porcentaje
+            if total > 1:
+                porcentaje = (uni / total) * 100
+                nombre = diccionario_aglomerados[str(aglo)]
+                print(f"{nombre}: {porcentaje:.2f}%")
+            else:
+                print(f"{diccionario_aglomerados[str(aglo)]}: No suficiente data para calcular porcentaje.")
