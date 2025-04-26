@@ -36,66 +36,67 @@ def informar_aglomerados_porcentajes(file_csv):
     for codigo_aglom in sorted(aglomerados, key = lambda x: int(x)):
         print(f'{diccionario_aglomerados[codigo_aglom]}: {aglomerados[codigo_aglom]['porcentaje']}%' )
 
+
+
 def informar_aglomerado_punto6(path_procesado):
-#Informar el nombre del  aglomerado con mayor cantidad de viviendas con más de dos ocupantes  sin baño. Informar también la cantidad de ellas.
- 
-# 1. Abrir el archivo y leer el contenido:
-  with path_procesado.open('r',encoding='utf-8') as file_csv:
-        reader=csv.DictReader(file_csv,delimiter=';')
-        fieldnames=reader.fieldnames
-        #2. Inicializar un diccionario para contar las viviendas sin baño por aglomerado:
+    # Informar el nombre del aglomerado con mayor cantidad de viviendas con más de dos ocupantes sin baño
+    # 1. Abrir el archivo y leer el contenido:
+    with path_procesado.open('r', encoding='utf-8') as file_csv:
+        reader = csv.DictReader(file_csv, delimiter=';')
+        
+        # 2. Inicializar un diccionario para contar las viviendas sin baño por aglomerado:
         aglomerado_contador = {}
-     
+        
         for row in reader:
-            #4. Verificar si la vivienda tiene más de dos ocupantes y no tiene baño:
-            if int(row['IX_TOT']) > 2 and row['IV8'] == '2':
+            # 4. Verificar si la vivienda tiene más de dos ocupantes y no tiene baño:
+            if int(row['IX_TOT']) > 2 and row['IV8'] == '1':  # 1 indica que no tiene baño
                 aglomerado = row['AGLOMERADO']
-                #5. Contar la vivienda en el aglomerado correspondiente:
+                pondera = int(row['PONDERA'])  # Número de hogares que respondieron lo mismo
+                
+                # 5. Contar la vivienda en el aglomerado correspondiente, ponderando por PONDERA:
                 if aglomerado in aglomerado_contador:
-                    aglomerado_contador[aglomerado] += 1
+                    aglomerado_contador[aglomerado] += pondera
                 else:
-                    aglomerado_contador[aglomerado] = 1
-    #6. Encontrar el aglomerado con mayor cantidad de viviendas sin baño:
-  max_aglomerado = max(aglomerado_contador, key=aglomerado_contador.get)
-  max_count = aglomerado_contador[max_aglomerado]
-  print(f"El aglomerado con mayor cantidad de viviendas sin baño y más de dos ocupantes es:{diccionario_aglomerados[str(max_aglomerado)]}({max_aglomerado}) con {max_count} viviendas.")
+                    aglomerado_contador[aglomerado] = pondera
     
+    # 6. Encontrar el aglomerado con mayor cantidad de viviendas sin baño:
+    if aglomerado_contador:
+        max_aglomerado = max(aglomerado_contador, key=aglomerado_contador.get)
+        max_count = aglomerado_contador[max_aglomerado]
+        
+        # 7. Imprimir el resultado con el nombre del aglomerado y la cantidad de viviendas ponderadas
+        nombre_aglomerado = diccionario_aglomerados.get(str(max_aglomerado), "Desconocido")
+        print(f"El aglomerado con mayor cantidad de viviendas sin baño y más de dos ocupantes es: {nombre_aglomerado} ({max_aglomerado}) con {max_count} viviendas.")
+    else:
+        print("No se encontraron viviendas que cumplan los requisitos.")
 
 
-import csv
-
-def informar_nivel_universitario(path_procesado):
-    total_por_aglomerado = {}
-    universitarios_por_aglomerado = {}
+def informar_porcentaje_universitarios(path_procesado):
+    # Diccionarios para acumular totales por aglomerado
+    total_personas = {}
+    personas_universitarias = {}
 
     with path_procesado.open('r', encoding='utf-8') as file_csv:
         reader = csv.DictReader(file_csv, delimiter=';')
+
         for row in reader:
             aglomerado = row['AGLOMERADO']
-            nivel = row['NIVEL_ED'].strip()
+            nivel = row['NIVEL_ED']
+            pondera = int(row['PONDERA'])
 
-            if aglomerado not in total_por_aglomerado:
-                total_por_aglomerado[aglomerado] = 0
-                universitarios_por_aglomerado[aglomerado] = 0
+            if nivel not in {'1','2','3','4','5','6','7','9'} or not aglomerado:
+                continue  # Saltear filas inválidas
 
-            total_por_aglomerado[aglomerado] += 1
+            # Acumular total de personas
+            total_personas[aglomerado] = total_personas.get(aglomerado, 0) + pondera
 
-            if nivel in {'5', '6'}:  # Universitario incompleto o completo
-                universitarios_por_aglomerado[aglomerado] += 1
+            # Acumular si tiene nivel universitario (5 o 6)
+            if nivel in {'5', '6'}:
+                personas_universitarias[aglomerado] = personas_universitarias.get(aglomerado, 0) + pondera
 
-    
-
-    print("\nPorcentaje de personas con nivel universitario o superior:\n")
-    for aglo in total_por_aglomerado:
-        if str(aglo) in diccionario_aglomerados:
-            total = total_por_aglomerado[aglo]
-            uni = universitarios_por_aglomerado[aglo]
-
-            # Si el total es mayor que 1, calculamos el porcentaje
-            if total > 1:
-                porcentaje = (uni / total) * 100
-                nombre = diccionario_aglomerados[str(aglo)]
-                print(f"{nombre}: {porcentaje:.2f}%")
-            else:
-                print(f"{diccionario_aglomerados[str(aglo)]}: No suficiente data para calcular porcentaje.")
-
+    print("Porcentaje de personas con nivel universitario o superior:\n")
+    for aglo, total in total_personas.items():
+        con_uni = personas_universitarias.get(aglo, 0)
+        porcentaje = (con_uni / total) * 100 if total > 0 else 0
+        nombre = diccionario_aglomerados.get(str(aglo), f"Aglomerado {aglo}")
+        print(f"{nombre}: {porcentaje:.2f}%")
