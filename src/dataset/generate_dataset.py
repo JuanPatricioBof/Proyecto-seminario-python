@@ -1,4 +1,5 @@
 
+import importlib.readers
 from src.utils.constants import DATA_PATH, DATA_OUT_PATH
 
 import csv
@@ -6,6 +7,11 @@ import csv
 import src.dataset.colums_individuo as generar_individuo
 
 import src.dataset.colums_hogar as generar_hogar
+
+import importlib
+
+importlib.reload(generar_individuo)
+importlib.reload(generar_hogar)
 
 def join_data(encuesta):
     """genera un único archivo csv, puede ser de hogares o individuos"""
@@ -35,11 +41,11 @@ def join_data(encuesta):
                 # abro el csv a copiar 
                 with path_archivo.open('r', encoding='utf-8') as entrada:
 
-                    print(f"Procesando: {path_archivo.name}")   #debug
 
                     reader = csv.reader(entrada, delimiter=';')     #genero iterable
                     try:
                        header = next(reader)   #separo encabezado
+                       print(f"Procesando: {path_archivo.name}")   #debug
                     except StopIteration:
                           print(f"El archivo {path_archivo.name} está vacío.")
                           continue
@@ -50,6 +56,7 @@ def join_data(encuesta):
 
                     for row in reader:
                         writer.writerow(row)
+    print("Dataset único")
 
 def generar_columnas_individual():
     """En esta función agrego columnas nuevas al dataset unido de individual.
