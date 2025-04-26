@@ -4,10 +4,21 @@ import csv
 
 from src.utils.constants import diccionario_aglomerados
 
-def tabla_porcentaje_10B(file_csv_individuos):
+def informar_tabla_porcentaje_10B(file_csv_individuos):
     """Pedir al usuario que seleccione dos aglomerados y a partir de la información
 contenida retornar una tabla que contenga el porcentaje de personas mayores de
 edad con secundario incompleto."""
+    """ Estructura de la variable tabla: 
+    { 
+        año: {
+            trimestre: {
+                    agloA: {total:0, cumple:0, porcentaje:0.0}
+                    agloB:  {total:0, cumple:0, porcentaje:0.0}
+                }
+            trimestre:  {...}
+        }
+        año: {...} 
+    }"""
 
     #muestro al usuario las opciones de aglomerado (imprimo diccionario de codigo:nombre)
     salida = ''
