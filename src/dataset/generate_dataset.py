@@ -63,20 +63,20 @@ def generar_columnas_individual():
     La primera columna que agrego lo hago a partir del original y el nuevo.
     El resto lo sobreescribo en el nuevo.
     """
-    PATH_ARCHIVO_ORIGINAL = DATA_OUT_PATH / "usu_individual.csv"
-    PATH_ARCHIVO_PROCESADO = DATA_OUT_PATH / "individual_process.csv"
+    path_archivo_unico = DATA_OUT_PATH / "usu_individual.csv"
+    path_archivo_procesado = DATA_OUT_PATH / "individual_process.csv"
     
-    generar_individuo.generar_columna_CH04_str(PATH_ARCHIVO_ORIGINAL, PATH_ARCHIVO_PROCESADO )
-    # generar_individuo.generar_columna_X(PATH_ARCHIVO_PROCESADO)
+    generar_individuo.generar_columna_CH04_str(path_archivo_unico, path_archivo_procesado)
+    
 
 def generar_columnas_hogar():
     """En esta función agrego columnas nuevas al dataset unido hogar.
     La primera columna que agrego lo hago a partir del original y el nuevo.
     El resto lo sobreescrivo en el nuevo.
     """
-    PATH_ARCHIVO_ORIGINAL = DATA_OUT_PATH / "usu_hogar.csv"
-    PATH_ARCHIVO_PROCESADO = DATA_OUT_PATH / "hogar_process.csv"
+    path_archivo_unico = DATA_OUT_PATH / "usu_hogar.csv"
+    path_archivo_procesado = DATA_OUT_PATH / "hogar_process.csv"
     
     #llamo a funciones de agregar columnas
-    generar_hogar.generate_column_tipo_hogar(PATH_ARCHIVO_ORIGINAL, PATH_ARCHIVO_PROCESADO )    
-    generar_hogar.generate_column_material_techumbre(PATH_ARCHIVO_PROCESADO)
+    generar_hogar.generate_column_tipo_hogar(path_archivo_unico, path_archivo_procesado)    
+    generar_hogar.generate_column_material_techumbre(path_archivo_procesado)

@@ -2,14 +2,14 @@
 
 import csv
 
-def generar_columna_CH04_str(path_original, path_nuevo):
+def generar_columna_CH04_str(archivo_original, archivo_procesado):
     """Se traduce los valores CH04 numéricos a "Masculino" y "Femenino" según corresponda. El resultado se debe 
     almacenar en una nueva columna llamada CH04_str.
     Recorre el archivo original y guarda cada linea, con la nueva columna, en una variable auxliar.
     Luego abre el archivo nuevo y carga con esta variable.
        """
     # leo el contenido y genero los datos nuevos en la memoria
-    with path_original.open('r', encoding='utf-8') as entrada:
+    with archivo_original.open('r', encoding='utf-8') as entrada:
 
         reader = csv.DictReader(entrada, delimiter=';')
         fieldnames = reader.fieldnames  # obtiene el encabezado
@@ -25,7 +25,7 @@ def generar_columna_CH04_str(path_original, path_nuevo):
             filas.append(row)
     
     # cargo los datos nuevos en el archivo nuevo de invividual
-    with path_nuevo.open('w', newline = "", encoding='utf-8')as salida:
+    with archivo_procesado.open('w', newline = "", encoding='utf-8')as salida:
         writer = csv.DictWriter(salida, fieldnames=fieldnames, delimiter=";")
         writer.writeheader()
         writer.writerows(filas)
