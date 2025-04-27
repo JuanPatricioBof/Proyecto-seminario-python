@@ -31,15 +31,13 @@ def generar_columna_CH04_str(path_original, path_nuevo):
         writer.writerows(filas)
 
     print("✅ Se agregó la columna CH04_str.")
-    
-import csv
 
-def generate_columna_NIVEL_ED_str(path_individual):
+def generate_columna_NIVEL_ED_str(path_nuevo):
     """Se traduce los valores NIVEL_ED numéricos a descripciones en formato texto según las reglas especificadas.
        El resultado se debe almacenar en una nueva columna llamada NIVEL_ED_str.
     """
     # leo el contenido y genero los datos nuevos en la memoria
-    with path_individual.open('r', encoding='utf-8') as file_csv:
+    with path_nuevo.open('r', encoding='utf-8') as file_csv:
 
         reader = csv.DictReader(file_csv, delimiter=';')
         fieldnames = reader.fieldnames
@@ -68,17 +66,17 @@ def generate_columna_NIVEL_ED_str(path_individual):
             filas.append(row)
     
     # Sobrescribir el archivo con los datos nuevos
-    with path_individual.open('w', newline="", encoding='utf-8') as file_csv:
+    with path_nuevo.open('w', newline="", encoding='utf-8') as file_csv:
         writer = csv.DictWriter(file_csv, fieldnames=fieldnames, delimiter=";")
         writer.writeheader()
         writer.writerows(filas)
 
 
 
-def generate_columna_CONDICION_LABORAL(path_individual):
+def generate_columna_CONDICION_LABORAL(path_nuevo):
     """Agrega una columna llamada CONDICION_LABORAL con valores de texto según las reglas dadas."""
 
-    with path_individual.open('r', encoding='utf-8') as file_csv:
+    with path_nuevo.open('r', encoding='utf-8') as file_csv:
         reader = csv.DictReader(file_csv, delimiter=';')
         fieldnames = reader.fieldnames
 
@@ -105,7 +103,7 @@ def generate_columna_CONDICION_LABORAL(path_individual):
 
             filas.append(row)
 
-    with path_individual.open('w', newline='', encoding='utf-8') as file_csv:
+    with path_nuevo.open('w', newline='', encoding='utf-8') as file_csv:
         writer = csv.DictWriter(file_csv, fieldnames=fieldnames, delimiter=';')
         writer.writeheader()
         writer.writerows(filas)
