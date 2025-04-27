@@ -70,6 +70,7 @@ def generate_columna_NIVEL_ED_str(path_nuevo):
         writer = csv.DictWriter(file_csv, fieldnames=fieldnames, delimiter=";")
         writer.writeheader()
         writer.writerows(filas)
+    print("Se agrego la columna NIVEL_ED_str")
 
 
 
@@ -107,6 +108,7 @@ def generate_columna_CONDICION_LABORAL(path_nuevo):
         writer = csv.DictWriter(file_csv, fieldnames=fieldnames, delimiter=';')
         writer.writeheader()
         writer.writerows(filas)
+    print("Se agrega la columna CONDICION_LABORAL")
 
 
 
