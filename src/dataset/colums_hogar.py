@@ -41,21 +41,20 @@ def generate_column_CONDICION_DE_HABITABILIDAD(path_hogar):
             ubicacion_banio = row['IV9']  # 1: dentro vivienda, 2: dentro terreno, 3: fuera terreno
             desague_banio = row['IV11']   # 1: red pública, 2: cámara séptica, 3: pozo ciego, 4: hoyo
             piso = row['IV3']         # 1: piso bueno, 2: cemento, 3: tierra/ladrillo suelto
+            inodoro = row ['IV10'] # 1: con boton con arrastre de agua, 2: sin boton con arrastre de agua (a balde), 3: letrina
 
             # Primero los casos insuficientes
-            if (agua == '3' or tiene_banio == '2' or desague_banio == '4'):
+            if (agua == '3' or tiene_banio == '2' or desague_banio == '4' or piso == '3'):
                 row['CONDICION_DE_HABITABILIDAD'] = 'insuficiente'
             # Luego regular
-            elif (agua == '2' or origen_agua != '1' or ubicacion_banio == '3' or piso == '3'):
+            elif (agua == '2' or origen_agua in ['2', '3'] or ubicacion_banio == '3' or inodoro == 3):
                 row['CONDICION_DE_HABITABILIDAD'] = 'regular'
+            # Luego saludables
+            elif (agua == '1' and origen_agua == '1' and ubicacion_banio == '1' and piso in ['1', '2'] and desague_banio in ['1', '2', '3']):
+                row['CONDICION_DE_HABITABILIDAD'] = 'saludables'
             # Luego buena
             elif (agua == '1' and origen_agua == '1' and ubicacion_banio == '1' and desague_banio == '1' and piso == '1'):
                 row['CONDICION_DE_HABITABILIDAD'] = 'buena'
-            # Luego saludables
-            elif (agua == '1' and origen_agua == '1' and ubicacion_banio == '1' and piso in ['1', '2'] and desague_banio != '4'):
-                row['CONDICION_DE_HABITABILIDAD'] = 'saludables'
-            else:
-                row['CONDICION_DE_HABITABILIDAD'] = 'regular'  # fallback seguro PREGUNTAR
 
             filas.append(row)
 
