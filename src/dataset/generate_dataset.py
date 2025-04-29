@@ -66,7 +66,10 @@ def generar_columnas_individual():
     path_archivo_unico = DATA_OUT_PATH / "usu_individual.csv"
     path_archivo_procesado = DATA_OUT_PATH / "individual_process.csv"
     
-    generar_individuo.generar_columna_CH04_str(path_archivo_unico, path_archivo_procesado)
+    generar_individuo.generar_columna_CH04_str(path_archivo_unico, path_archivo_procesado )
+    generar_individuo.generate_columna_NIVEL_ED_str(path_archivo_procesado)
+    generar_individuo.generate_columna_CONDICION_LABORAL(path_archivo_procesado)
+    #generar_individuo.generar_columna_X(path_archivo_procesado)
     
 
 def generar_columnas_hogar():

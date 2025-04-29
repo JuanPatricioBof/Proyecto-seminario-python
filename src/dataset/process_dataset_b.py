@@ -121,15 +121,16 @@ def informar_aglomerados_punto11(path_procesado):
     for row in datos_ultimo_trimestre:
         aglomerado = row['AGLOMERADO']
         tipo_material = row['material_techumbre'].strip().lower()
+        pondera = int(row["PONDERA"]) #agregado para sumar segun la cantidad de hogares
 
 
         if aglomerado not in viviendas_totales:
             viviendas_totales[aglomerado] = 0
             viviendas_precarias[aglomerado] = 0
 
-        viviendas_totales[aglomerado] += 1
+        viviendas_totales[aglomerado] += pondera
         if tipo_material == 'material precario':
-            viviendas_precarias[aglomerado] += 1
+            viviendas_precarias[aglomerado] += pondera
 
     # Calcular porcentajes
     porcentajes = {}

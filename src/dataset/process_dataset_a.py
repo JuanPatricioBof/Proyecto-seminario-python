@@ -76,15 +76,16 @@ def informar_nivel_universitario(path_procesado):
         for row in reader:
             aglomerado = row['AGLOMERADO']
             nivel = row['NIVEL_ED'].strip()
+            pondera=int(row["PONDERA"]) #Tomamos la Ponderacion
 
             if aglomerado not in total_por_aglomerado:
                 total_por_aglomerado[aglomerado] = 0
                 universitarios_por_aglomerado[aglomerado] = 0
 
-            total_por_aglomerado[aglomerado] += 1
+            total_por_aglomerado[aglomerado] += pondera
 
             if nivel in {'5', '6'}:  # Universitario incompleto o completo
-                universitarios_por_aglomerado[aglomerado] += 1
+                universitarios_por_aglomerado[aglomerado] += pondera
 
     
 
