@@ -1,10 +1,4 @@
 import csv
-from pathlib import Path
-
-# ruta a copia provisional para testear el funcionamiento de la funcion
-ruta_datos = Path().resolve().parent.parent
-ruta_datos = ruta_datos / "files" / "data_eph" / "EPH_usu_3er_Trim_2024_txt" 
-ruta_individual = ruta_datos / "usu_individual_T324_copia.txt"
 
 def generar_universitario_completo(path_copia_csv):
     """ genera una nueva columna llamada UNIVERSITARIO numérica que indica si
@@ -66,7 +60,6 @@ def generar_universitario_completo(path_copia_csv):
 
   
     # sobreescribo el archivo con los cambios
-    # no verifico que no exista o esté vacío porque si fuese así ya habría terminado la función antes
     try: 
         with open(path_copia_csv, "w", newline = "") as file:
             csv_writer = csv.DictWriter(file,fieldnames=header,delimiter=";")
@@ -75,7 +68,5 @@ def generar_universitario_completo(path_copia_csv):
     except PermissionError:
         print(f"Error. El archivo no puede ser sobreeescrito")
     else:
-        print("Columna generada")
+        print(f"Columna 'UNIVERSITARIO_COMPLETO' generada")
 
-# codigo provisional para testear el funcionamiento de la funcion
-generar_universitario_completo(ruta_individual)
