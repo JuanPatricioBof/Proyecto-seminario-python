@@ -10,13 +10,15 @@ import src.dataset.colums_hogar as generar_hogar
 
 import importlib
 
+import re
+
 importlib.reload(generar_individuo)
 importlib.reload(generar_hogar)
 
 def join_data(encuesta):
-    """genera un único archivo csv, puede ser de hogares o individuos"""
+    """Genera un único archivo csv, puede ser de hogares o individuos"""
 
-    # generar path al archivo único e identificar que escuesta estoy unificando
+    # generar path al archivo único e identificar qué encuesta estoy unificando
     if encuesta == "hogar":
         path_archivos_unidos = DATA_OUT_PATH / "usu_hogar.csv"
         patron_nombre = "usu_hogar_*"
@@ -26,37 +28,49 @@ def join_data(encuesta):
     
     # Para controlar que el encabezado se escriba una sola vez
     se_escribio_encabezado = False  
-    
-    # abro el archivo único para escribirlo
-    with path_archivos_unidos.open('w', newline="", encoding = "utf-8") as salida:
 
+    # Extraer año y trimestre del nombre de la carpeta
+    def extraer_ano_trimestre(path):
+        nombre = path.name
+        match = re.search(r'(\d)er_Trim_(\d{4})', nombre)
+        if match:
+            trimestre = int(match.group(1))
+            ano = int(match.group(2))
+            return (ano, trimestre)
+        return (0, 0)
+
+    # Ordenar carpetas de data_eph por año y trimestre descendente
+    carpetas_trimestres = sorted(
+        [p for p in DATA_PATH.iterdir() if p.is_dir()],
+        key=extraer_ano_trimestre,
+        reverse=True
+    )
+
+    # Abro el archivo único para escribirlo
+    with path_archivos_unidos.open('w', newline="", encoding='utf-8') as salida:
         writer = csv.writer(salida, delimiter=';')
 
-        #recorro las carpetas que contiene data_eph
-        for path_trimestre in DATA_PATH.iterdir():
-            
-            #recorro archivos de un trimestre, solo los que quiero unir --> tipo = hogar || individual
+        # Recorro carpetas ordenadas
+        for path_trimestre in carpetas_trimestres:
+            # Recorro archivos del tipo deseado dentro de la carpeta
             for path_archivo in path_trimestre.glob(patron_nombre):
-                
-                # abro el csv a copiar 
                 with path_archivo.open('r', encoding='utf-8') as entrada:
-
-
-                    reader = csv.reader(entrada, delimiter=';')     #genero iterable
+                    reader = csv.reader(entrada, delimiter=';')
                     try:
-                       header = next(reader)   #separo encabezado
-                       print(f"Procesando: {path_archivo.name}")   #debug
+                        header = next(reader)  # separo encabezado
+                        print(f"Procesando: {path_archivo.name}")
                     except StopIteration:
-                          print(f"El archivo {path_archivo.name} está vacío.")
-                          continue
-                
+                        print(f"El archivo {path_archivo.name} está vacío.")
+                        continue
+
                     if not se_escribio_encabezado:
                         writer.writerow(header)
                         se_escribio_encabezado = True
 
                     for row in reader:
                         writer.writerow(row)
-    print("Dataset único")
+
+    print("Dataset único generado.")
 
 def generar_columnas_individual():
     """En esta función agrego columnas nuevas al dataset unido de individual.
