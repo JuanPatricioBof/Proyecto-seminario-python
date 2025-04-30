@@ -11,10 +11,10 @@ def generar_universitario_completo(path_copia_csv):
     una persona mayor de edad ha completado el como mínimo el nivel 
     universitario. Si la columna ya existe, actualiza los datos de la misma.
     Los datos de la columna se representan de la siguiente manera:
-    1: Sí.
-    0: No.
-    2: no aplica.
-    Vacío: sin información suficiente.
+    "1": Sí.
+    "0": No.
+    "2": No aplica.
+    "": Indefinido (sin información suficiente).
     Se considera que la persona ha completado el nivel universitario si:
     - Su nivel educativo está registrado como universitario completo (columna
     "NIVEL_ED")
@@ -25,46 +25,57 @@ def generar_universitario_completo(path_copia_csv):
     """
 
     # accedo al encabezado y a las filas del archivo
-    with open(path_copia_csv, "r", encoding="utf-8") as file:
-        try:
-            csv_reader = csv.DictReader(file,delimiter=";")
-            header = csv_reader.fieldnames
-            rows = list(csv_reader)
-        except StopIteration:
-            print(f"Error: Archivo vacío.")
-            exit(1)
-        except PermissionError: 
-            print(f"Error. Incapaz de acceder al archivo")
-            exit(1)
-        
+    try:
+        with open(path_copia_csv, "r", encoding="utf-8") as file:
+            try:
+                csv_reader = csv.DictReader(file,delimiter=";")
+                header = csv_reader.fieldnames
+                rows = list(csv_reader)
+            except StopIteration:
+                print(f"Error: Archivo vacío.")
+                exit(1)
+    except FileNotFoundError:
+        print(f"Error: El archivo no se encontró")
+        exit(1)
+    except PermissionError:
+        print(f"Error: Incapaz de acceder al archivo")
+        exit(1)
     #actualizo el encabezado 
     if not "UNIVERSITARIO" in header:
         header.append("UNIVERSITARIO")
 
     # actualizo las filas
     for row in rows:
-        edad = row["CH06"]
-        if(edad.isnumeric):
-            if(int(edad) >= 18):
-                if((row["CH12"] =="8" or (row["CH12"] =="7" and row["CH13"] == "1")) or row["NIVEL_ED"] == "6"):
-                    row["UNIVERSITARIO"] = "1" # sí
+        try:
+            edad = row["CH06"]
+            if(edad.isnumeric):
+                if(int(edad) >= 18):
+                    if((row["CH12"] =="8" or (row["CH12"] =="7" and 
+                    row["CH13"] == "1")) or row["NIVEL_ED"] == "6"):
+                        row["UNIVERSITARIO"] = "1" # sí
+                    else:
+                        row["UNIVERSITARIO"] = "0" # no
                 else:
-                    row["UNIVERSITARIO"] = "0" # no
+                    row["UNIVERSITARIO"] = "2" # no aplica
             else:
-                row["UNIVERSITARIO"] = "2" # no aplica
-        else:
-            row["UNIVERSITARIO"] = "" # indefinido
+                row["UNIVERSITARIO"] = "" # indefinido
+        except KeyError:
+            print(f"Error: no se encontraron una o más columnas necesarias"
+                  " para el procesamiento")
 
 
   
     # sobreescribo el archivo con los cambios
-    with open(path_copia_csv, "w", newline = "") as file:
-        csv_writer = csv.DictWriter(file,fieldnames=header,delimiter=";")
-        csv_writer.writeheader()
-        csv_writer.writerows(rows)
-
-
-    print("columna generada")
+    # no verifico que no exista o esté vacío porque si fuese así ya habría terminado la función antes
+    try: 
+        with open(path_copia_csv, "w", newline = "") as file:
+            csv_writer = csv.DictWriter(file,fieldnames=header,delimiter=";")
+            csv_writer.writeheader()
+            csv_writer.writerows(rows)
+    except PermissionError:
+        print(f"Error. El archivo no puede ser sobreeescrito")
+    else:
+        print("Columna generada")
 
 # codigo provisional para testear el funcionamiento de la funcion
 generar_universitario_completo(ruta_individual)
