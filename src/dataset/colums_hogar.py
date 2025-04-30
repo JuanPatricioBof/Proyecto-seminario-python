@@ -1,3 +1,5 @@
+"""funciones para agregar columnas"""
+
 import csv
 
 def generate_column_tipo_hogar(archivo_original, archivo_procesado):
@@ -59,6 +61,7 @@ def generate_column_material_techumbre(archivo_procesado):
             writer.writeheader()
             writer.writerows(filas)
     print("✅ Se agregó la columna material_techumbre con valores traducidos.")
+
 
 def generar_columna_densidad_hogar(path_copia_hogar):
     """ Genera una nueva columna denominada DENSIDAD_HOGAR según el
