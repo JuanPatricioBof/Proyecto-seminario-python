@@ -35,18 +35,19 @@ def generar_universitario_completo(path_copia_individual):
     except PermissionError:
         print(f"Error: Incapaz de acceder al archivo")
         exit(1)
-        
+
     #actualizo el encabezado 
     if not "UNIVERSITARIO" in header:
         header.append("UNIVERSITARIO")
 
-    # actualizo las filas
-    for row in rows:
-        # compruebo que el archivo contenga las columnas necesarias
-        if not {"CHO6", "CH12", "NIVEL_ED"}.issubset(header):
-            print(f"Error: no se encontraron una o más columnas necesarias"
-                  " para el procesamiento")
-        else:
+    
+    # compruebo que el archivo contenga las columnas necesarias
+    if not {"CHO6", "CH12", "NIVEL_ED"}.issubset(header):
+        print(f"Error: no se encontraron una o más columnas necesarias"
+                " para el procesamiento")
+    else:
+        # actualizo las filas
+        for row in rows:
             edad = row["CH06"]
             if(edad.isnumeric):
                 if(int(edad) >= 18):
@@ -60,8 +61,6 @@ def generar_universitario_completo(path_copia_individual):
             else:
                 row["UNIVERSITARIO"] = "" # indefinido
 
-            
-
     # sobreescribo el archivo con los cambios
     try: 
         with open(path_copia_individual, "w", newline = "") as file:
@@ -72,4 +71,3 @@ def generar_universitario_completo(path_copia_individual):
         print(f"Error. El archivo no puede ser sobreeescrito")
     else:
         print(f"Columna 'UNIVERSITARIO_COMPLETO' generada")
-
