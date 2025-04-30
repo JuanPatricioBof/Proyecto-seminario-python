@@ -91,54 +91,56 @@ edad con secundario incompleto."""
 
 
 def informar_aglomerados_punto11(path_procesado):
-    # Pedir al usuario que seleccione un año
     anio = input("Ingrese el año que desea consultar: ")
     if not anio.isdigit():
         print("Por favor, ingrese un año válido.")
         return
 
-    datos = []  # Guardar los datos del año consultado
+    datos = []
     with path_procesado.open('r', encoding='utf-8') as file_csv:
         reader = csv.DictReader(file_csv, delimiter=';')
         for row in reader:
-            if row['ANO4'] == str(anio):
+            if row['ANO4'] == anio:
                 datos.append(row)
 
     if not datos:
         print(f"No hay datos cargados para el año {anio}.")
         return
 
-    # Obtener el trimestre más reciente del año
-    ultimo_trimestre = max(int(row['TRIMESTRE']) for row in datos)
+    # Como los datos están ordenados por año y trimestre en forma descendente,
+    # el primer registro del año es del trimestre más reciente
+    ultimo_trimestre = int(datos[0]['TRIMESTRE'])
+    datos_ultimo_trimestre = [
+        row for row in datos if int(row['TRIMESTRE']) == ultimo_trimestre
+    ]
 
-    # Filtrar solo datos del último trimestre
-    datos_ultimo_trimestre = [row for row in datos if int(row['TRIMESTRE']) == ultimo_trimestre]
-
-    # Contar viviendas totales y precarias por aglomerado
     viviendas_totales = {}
     viviendas_precarias = {}
 
     for row in datos_ultimo_trimestre:
         aglomerado = row['AGLOMERADO']
         tipo_material = row['material_techumbre'].strip().lower()
-        pondera = int(row["PONDERA"]) #agregado para sumar segun la cantidad de hogares
 
+        try:
+            pondera = int(row["PONDERA"])
+        except ValueError:
+            continue  # Saltar si el dato está mal cargado
 
         if aglomerado not in viviendas_totales:
             viviendas_totales[aglomerado] = 0
             viviendas_precarias[aglomerado] = 0
 
         viviendas_totales[aglomerado] += pondera
-        if tipo_material == 'material precario':
+        if tipo_material=='material precario':
             viviendas_precarias[aglomerado] += pondera
 
-    # Calcular porcentajes
     porcentajes = {}
     for aglomerado in viviendas_totales:
-        porcentaje = (viviendas_precarias[aglomerado] / viviendas_totales[aglomerado]) * 100
-        porcentajes[aglomerado] = porcentaje
+        total = viviendas_totales[aglomerado]
+        precarias = viviendas_precarias[aglomerado]
+        if total > 0:
+            porcentajes[aglomerado] = (precarias / total) * 100
 
-    # Filtrar solo aglomerados válidos (que estén en el diccionario)
     porcentajes_validos = {
         aglo: porcentaje
         for aglo, porcentaje in porcentajes.items()
@@ -156,5 +158,11 @@ def informar_aglomerados_punto11(path_procesado):
     nombre_min = diccionario_aglomerados[str(min_aglomerado)]
 
     print(f"\nTrimestre analizado: {ultimo_trimestre} del año {anio}")
-    print(f"El aglomerado con mayor porcentaje de viviendas de material precario es {nombre_max} con : ({porcentajes_validos[max_aglomerado]:.2f}%)")
-    print(f"El aglomerado con menor porcentaje de viviendas de material precario es {nombre_min} con : ({porcentajes_validos[min_aglomerado]:.2f}%)")
+    print("Porcentaje de viviendas con material precario por aglomerado:")
+
+    for aglo, porcentaje in sorted(porcentajes_validos.items(), key=lambda x: x[1], reverse=True):
+        nombre = diccionario_aglomerados[str(aglo)]
+        print(f"  - {nombre}: {porcentaje:.2f}%")
+
+    print(f"\nEl aglomerado con mayor porcentaje es {nombre_max} ({porcentajes_validos[max_aglomerado]:.2f}%)")
+    print(f"El aglomerado con menor porcentaje es {nombre_min} ({porcentajes_validos[min_aglomerado]:.2f}%)")
