@@ -1,6 +1,6 @@
 import csv
 
-def generar_universitario_completo(path_copia_individual):
+def generar_columna_universitario_completo(path_copia_individual):
     """ genera una nueva columna llamada UNIVERSITARIO numérica que
     indica si una persona mayor de edad ha completado, como mínimo, el
     nivel universitario. 
