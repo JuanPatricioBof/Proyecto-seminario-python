@@ -1,6 +1,7 @@
+#AJUSTAR PEP 8
 import csv
 
-def generar_universitario_completo(path_copia_csv):
+def generar_universitario_completo(path_copia_individual):
     """ genera una nueva columna llamada UNIVERSITARIO numérica que indica si
     una persona mayor de edad ha completado el como mínimo el nivel 
     universitario. Si la columna ya existe, actualiza los datos de la misma.
@@ -20,7 +21,7 @@ def generar_universitario_completo(path_copia_csv):
 
     # accedo al encabezado y a las filas del archivo
     try:
-        with open(path_copia_csv, "r", encoding="utf-8") as file:
+        with open(path_copia_individual, "r", encoding="utf-8") as file:
             try:
                 csv_reader = csv.DictReader(file,delimiter=";")
                 header = csv_reader.fieldnames
@@ -34,13 +35,18 @@ def generar_universitario_completo(path_copia_csv):
     except PermissionError:
         print(f"Error: Incapaz de acceder al archivo")
         exit(1)
+        
     #actualizo el encabezado 
     if not "UNIVERSITARIO" in header:
         header.append("UNIVERSITARIO")
 
     # actualizo las filas
     for row in rows:
-        try:
+        # compruebo que el archivo contenga las columnas necesarias
+        if not {"CHO6", "CH12", "NIVEL_ED"}.issubset(header):
+            print(f"Error: no se encontraron una o más columnas necesarias"
+                  " para el procesamiento")
+        else:
             edad = row["CH06"]
             if(edad.isnumeric):
                 if(int(edad) >= 18):
@@ -50,18 +56,15 @@ def generar_universitario_completo(path_copia_csv):
                     else:
                         row["UNIVERSITARIO"] = "0" # no
                 else:
-                    row["UNIVERSITARIO"] = "2" # no aplica
+                    row["UNIVERSITARIO"] = "2" # no aplica 
             else:
                 row["UNIVERSITARIO"] = "" # indefinido
-        except KeyError:
-            print(f"Error: no se encontraron una o más columnas necesarias"
-                  " para el procesamiento")
 
+            
 
-  
     # sobreescribo el archivo con los cambios
     try: 
-        with open(path_copia_csv, "w", newline = "") as file:
+        with open(path_copia_individual, "w", newline = "") as file:
             csv_writer = csv.DictWriter(file,fieldnames=header,delimiter=";")
             csv_writer.writeheader()
             csv_writer.writerows(rows)
