@@ -46,11 +46,11 @@ def generate_column_material_techumbre(archivo_procesado):
             fieldnames.append('material_techumbre')
         filas=[]
         for row in reader:
-            if row['V4'].strip() in ['5','6','7']:
+            if row['IV4'].strip() in ['5','6','7']:
                 row['material_techumbre']='Material precario'
-            elif row['V4'].strip() in ['1','2','3','4']:
+            elif row['IV4'].strip() in ['1','2','3','4']:
                 row['material_techumbre']='Material durable'
-            elif row['V4'].strip()=='9':
+            elif row['IV4'].strip()=='9':
                 row['material_techumbre']='No aplica'
             
             filas.append(row)
