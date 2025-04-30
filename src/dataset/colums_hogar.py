@@ -1,11 +1,5 @@
 import csv
 
-from pathlib import Path
-
-#path provisional para testeo del codigo 
-path_copia_hogar = Path(__file__).resolve().parent.parent.parent 
-path_copia_hogar = path_copia_hogar / "files" / "data_eph" / "EPH_usu_3er_Trim_2024_txt" / "usu_hogar_T324_copia.txt"
-
 def generar_columna_densidad_hogar(path_copia_hogar):
     """ Genera una nueva columna denominada DENSIDAD_HOGAR según el siguiente 
         criterio:
@@ -26,7 +20,7 @@ def generar_columna_densidad_hogar(path_copia_hogar):
     try:
         with open(path_copia_hogar, "r", encoding="utf-8") as file:
             try:
-                #guardo el encabezado y una lista con las filas
+                # guardo el encabezado y una lista con las filas
                 csv_reader = csv.DictReader(file, delimiter=";")
                 header = csv_reader.fieldnames
                 rows = list(csv_reader)
@@ -36,8 +30,7 @@ def generar_columna_densidad_hogar(path_copia_hogar):
         print(f"Error: archivo no encontrado")
     except PermissionError:
         print(f"Error: acceso al archivo denegado")
-    else: # preguntar al ayudante
-
+    else: 
         # actualizo el encabezado en caso de ser necesario
         if not "DENSIDAD_HOGAR" in header:
             header.append("DENSIDAD_HOGAR")
@@ -47,7 +40,8 @@ def generar_columna_densidad_hogar(path_copia_hogar):
                 print(f"Error: falta una o más columnas para el procesamiento"
                       " de los datos")
         else: 
-            # actualizo las filas
+            # actualizo las filas calculando la densidad según 
+            # la cantidad de miembros y habitaciones
             for row in rows:
                 miembros = row["IX_TOT"]
                 habitaciones = row["IV2"]
@@ -55,10 +49,8 @@ def generar_columna_densidad_hogar(path_copia_hogar):
                     miembros = int(miembros)
                     habitaciones = int(habitaciones)
                     if(miembros < habitaciones):
-                        # menos de un miembro por habitación
                         row["DENSIDAD_HOGAR"] = "Bajo"
                     elif(miembros <= habitaciones*2):
-                        # entre uno y dos miembros por habitación
                         row["DENSIDAD_HOGAR"] = "Medio"
                     else: 
                         # más de dos miembros por habitación
@@ -77,7 +69,3 @@ def generar_columna_densidad_hogar(path_copia_hogar):
             print(f"Error. Acceso de escritura denegado")
         else:
             print(f"Columna 'DENSIDAR_HOGAR' generada.")
-
-
-# codigo provisional para testeo de la función
-generar_columna_densidad_hogar(path_copia_hogar)
