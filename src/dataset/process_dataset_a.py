@@ -3,6 +3,27 @@ import csv
 
 from src.utils.constants import diccionario_aglomerados
 
+def ano_y_trimestre_menor_desocupacion_PB_EJ3(path_procesado):
+    """3. Informar el ano y trimestre donde hubo menos desocupacion"""
+    ano_trimestres= {}
+    with path_procesado.open('r', encoding='utf-8') as archivo:
+        reader = csv.DictReader(archivo,delimiter=';')
+        for row in reader:
+            ano=row['ANO4']
+            trimestre=row['TRIMESTRE']
+            condicion=row['ESTADO']
+            pondera = int(row['PONDERA'])
+            if condicion=='2': #Desocupado
+                clave = (ano,trimestre)
+                if clave not in ano_trimestres:
+                    ano_trimestres[clave]= 0
+                ano_trimestres[clave] +=pondera
+    # Buscar la clave(ano, trimestre) con menor decupacion
+    menor_clave = min(ano_trimestres, key=ano_trimestres.get)
+    menor_valor = ano_trimestres[menor_clave]
+    print(f"El menor nivel de desocupacion fue en el ano {menor_clave[0]}, trimestre {menor_clave[1]}")
+            
+
 def informar_aglomerados_porcentajes_5B(file_csv):
     """ 5. Informar para cada aglomerado el porcentaje de viviendas ocupadas por sus propietarios. """
 
