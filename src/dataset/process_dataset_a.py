@@ -1,6 +1,6 @@
 """ SECCION B : información a obtener: consultas al dataset principal del 1 al 8 """
 import csv
-
+from collections import defaultdict
 from src.utils.constants import diccionario_aglomerados
 
 def ano_y_trimestre_menor_desocupacion_PB_EJ3(path_procesado):
@@ -22,6 +22,56 @@ def ano_y_trimestre_menor_desocupacion_PB_EJ3(path_procesado):
     menor_clave = min(ano_trimestres, key=ano_trimestres.get)
     menor_valor = ano_trimestres[menor_clave]
     print(f"El menor nivel de desocupacion fue en el ano {menor_clave[0]}, trimestre {menor_clave[1]}")
+    
+def ranking_aglomerado_EJ4(DATA_OUT_PATH):
+    hogar_path = DATA_OUT_PATH / "hogar_process.csv"
+    individual_path = DATA_OUT_PATH / "individual_process.csv"
+    
+    # 1. Contar universitarios por hogar (CODUSU)
+    universitarios_por_hogar = defaultdict(int)
+
+    with open(individual_path, newline='', encoding='utf-8') as f_ind:
+        reader = csv.DictReader(f_ind, delimiter=';')
+        for row in reader:
+            codusu = row.get('CODUSU')
+            nivel_ed = row.get('NIVEL_ED')
+            if codusu and nivel_ed == '6':
+                universitarios_por_hogar[codusu] += 1
+
+    # 2. Contar hogares por aglomerado
+    total_hogares = defaultdict(int)
+    hogares_calificados = defaultdict(int)
+
+    with open(hogar_path, newline='', encoding='utf-8') as f_hog:
+        reader = csv.DictReader(f_hog, delimiter=';')
+        for row in reader:
+            codusu = row.get('CODUSU')
+            aglomerado = row.get('AGLOMERADO')
+
+            if not codusu or not aglomerado:
+                continue  # saltear si falta info
+
+            total_hogares[aglomerado] += 1
+
+            if universitarios_por_hogar.get(codusu, 0) >= 2:
+                hogares_calificados[aglomerado] += 1
+
+    # 3. Calcular porcentajes
+    ranking = []
+    for aglo in total_hogares:
+        total = total_hogares[aglo]
+        calificados = hogares_calificados.get(aglo, 0)
+        porcentaje = (calificados / total) * 100 if total > 0 else 0
+        codigo_aglo = str(aglo).zfill(2)  # <- clave formateada
+        nombre_aglo = diccionario_aglomerados.get(codigo_aglo, f"Aglomerado {codigo_aglo}")
+        ranking.append((nombre_aglo, porcentaje))
+
+    # 4. Ordenar por porcentaje descendente y mostrar top 5
+    ranking.sort(key=lambda x: x[1], reverse=True)
+
+    print("Top 5 aglomerados con mayor porcentaje de hogares con ≥2 universitarios completos:\n")
+    for nombre_aglo, pct in ranking[:5]:
+        print(f"{nombre_aglo}: {pct:.2f}%")
             
 
 def informar_aglomerados_porcentajes_5B(file_csv):
