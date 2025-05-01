@@ -3,6 +3,56 @@ import csv
 from collections import defaultdict
 from src.utils.constants import diccionario_aglomerados
 
+def alfabetismo_por_ano(path_procesado):
+    """1. Informar año tras año el porcentaje de personas mayores a 6 años que saben y no saben leer y escribir (último trimestre del año)"""
+    datos = {}
+    with path_procesado.open('r', encoding='utf-8') as archivo:
+        reader = csv.DictReader(archivo, delimiter=';')
+        for row in reader:
+            try:
+                ano = row['ANO4']
+                trimestre = row['TRIMESTRE']
+                edad_raw = row['CH06'].strip()
+                ch09_raw = row['CH09'].strip()
+
+                if not edad_raw.isdigit() or ch09_raw not in ['1', '2']:
+                    continue
+
+                edad = int(edad_raw)
+                ch09 = int(ch09_raw)
+
+                if edad <= 6:
+                    continue
+
+                clave = (ano, trimestre)
+                if clave not in datos:
+                    datos[clave] = []
+                datos[clave].append(ch09)
+            except:
+                continue
+
+    # Guardar el último trimestre por año
+    ultimo_trimestre_por_anio = {}
+    for (ano, trimestre) in datos:
+        if ano not in ultimo_trimestre_por_anio:
+            ultimo_trimestre_por_anio[ano] = trimestre
+
+    # Calcular e imprimir resultados
+    for ano in sorted(ultimo_trimestre_por_anio):
+        trimestre = ultimo_trimestre_por_anio[ano]
+        respuestas = datos[(ano, trimestre)]
+        total = len(respuestas)
+        si = respuestas.count(1)
+        no = respuestas.count(2)
+
+        porcentaje_si = (si / total) * 100 if total > 0 else 0
+        porcentaje_no = (no / total) * 100 if total > 0 else 0
+
+        print(f"Año {ano} (trimestre {trimestre}):")
+        print(f"  Sabe leer y escribir: {round(porcentaje_si, 2)}%")
+        print(f"  No sabe leer y escribir: {round(porcentaje_no, 2)}%\n")
+
+
 def ano_y_trimestre_menor_desocupacion_PB_EJ3(path_procesado):
     """3. Informar el ano y trimestre donde hubo menos desocupacion"""
     ano_trimestres= {}
