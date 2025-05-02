@@ -46,31 +46,39 @@ def join_data(encuesta):
         reverse=True
     )
 
-    # Abro el archivo único para escribirlo
-    with path_archivos_unidos.open('w', newline="", encoding='utf-8') as salida:
-        writer = csv.writer(salida, delimiter=';')
+    try:
+        # Abro el archivo único para escribirlo
+        with path_archivos_unidos.open('w', newline="", encoding='utf-8') as salida:
+            writer = csv.writer(salida, delimiter=';')
 
-        # Recorro carpetas ordenadas
-        for path_trimestre in carpetas_trimestres:
-            # Recorro archivos del tipo deseado dentro de la carpeta
-            for path_archivo in path_trimestre.glob(patron_nombre):
-                with path_archivo.open('r', encoding='utf-8') as entrada:
-                    reader = csv.reader(entrada, delimiter=';')
-                    try:
-                        header = next(reader)  # separo encabezado
-                        print(f"Procesando: {path_archivo.name}")
-                    except StopIteration:
-                        print(f"El archivo {path_archivo.name} está vacío.")
-                        continue
+            # Recorro carpetas ordenadas
+            for path_trimestre in carpetas_trimestres:
+                # Recorro archivos del tipo deseado dentro de la carpeta
+                for path_archivo in path_trimestre.glob(patron_nombre):
+                    try:        
+                        with path_archivo.open('r', encoding='utf-8') as entrada:
+                            reader = csv.reader(entrada, delimiter=';')
+                            try:
+                                header = next(reader)  # separo encabezado
+                                print(f"Procesando: {path_archivo.name}")
+                            except StopIteration:
+                                print(f"El archivo {path_archivo.name} está vacío.")
+                                continue
 
-                    if not se_escribio_encabezado:
-                        writer.writerow(header)
-                        se_escribio_encabezado = True
+                            if not se_escribio_encabezado:
+                                writer.writerow(header)
+                                se_escribio_encabezado = True
 
-                    for row in reader:
-                        writer.writerow(row)
-
-    print("Dataset único generado.")
+                            for row in reader:
+                                writer.writerow(row)
+                    except PermissionError:  
+                        print(f"Error: permiso de lectura a {path_archivo} denegado")
+                    # no hace falta chequear FileNotFoundError porque si
+                    # entró en el for el archivo seguro existe
+    except PermissionError:
+        print(f"Error: acceso de escritura a {path_archivos_unidos} denegado.")
+    else:
+        print("Dataset único generado.")
 
 def generar_columnas_individual():
     """En esta función agrego columnas nuevas al dataset unido de individual.
