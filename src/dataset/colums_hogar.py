@@ -13,40 +13,39 @@ def generate_column_tipo_hogar(archivo_original, archivo_procesado):
             reader=csv.DictReader(file_csv,delimiter=';')
             fieldnames=reader.fieldnames
             if fieldnames is None:
-                print(f"Error: archivo vacío")
-            else:
-                #Se agrega la nueva columna
-                if('tipo_hogar') not in fieldnames:
-                    fieldnames.append('tipo_hogar')
+                raise ValueError
             
-                filas=[]
-                for row in reader:
-                    if int(row['IX_TOT'])==1:
-                        row['tipo_hogar']='Unipersonal'
-                    elif 2<= int(row['IX_TOT'])<=4:
-                        row['tipo_hogar']='Nuclear'
-                    else:
-                        row['tipo_hogar']='Extendido'
-                    filas.append(row)
-   
+            #Se agrega la nueva columna
+            if('tipo_hogar') not in fieldnames:
+                fieldnames.append('tipo_hogar')
+        
+            filas=[]
+            for row in reader:
+                if int(row['IX_TOT'])==1:
+                    row['tipo_hogar']='Unipersonal'
+                elif 2<= int(row['IX_TOT'])<=4:
+                    row['tipo_hogar']='Nuclear'
+                else:
+                    row['tipo_hogar']='Extendido'
+                filas.append(row)
+              
     except FileNotFoundError:
-        print(f"Error: el archivo no fue encontrado")
-  
+        print(f"Error: el archivo no fue encontrado") 
     except PermissionError:
         print(f"Error: acceso de lectura denegado")
-  
+    except ValueError:
+        print(f"Error: archivo vacío")
     else:
-        if not fieldnames is None:
-            # Sobrescribir el archivo con los datos nuevos
-            try:
-                with archivo_procesado.open('w', newline = "", encoding='utf-8')as file_csv:
-                    writer = csv.DictWriter(file_csv, fieldnames=fieldnames, delimiter=';')
-                    writer.writeheader()
-                    writer.writerows(filas)
-            except PermissionError:
-                print(f"Error: permiso de escritura denegado")
-            else:
-                print("✅ Se agregó la columna tipo_hogar con valores traducidos.")
+        # Sobrescribir el archivo con los datos nuevos
+        try:
+            with archivo_procesado.open('w', newline = "", encoding='utf-8')as file_csv:
+                writer = csv.DictWriter(file_csv, fieldnames=fieldnames, delimiter=';')
+                writer.writeheader()
+                writer.writerows(filas)
+        except PermissionError:
+            print(f"Error: permiso de escritura denegado")
+        else:
+            print("✅ Se agregó la columna tipo_hogar con valores traducidos.")
         
 
 def generate_column_material_techumbre(archivo_procesado):
@@ -60,37 +59,38 @@ def generate_column_material_techumbre(archivo_procesado):
             fieldnames=reader.fieldnames
 
             if fieldnames is None:
-                print(f"Error: archivo vacío")
-            else: 
-                #Se agrega la nueva columna
-                if('material_techumbre') not in fieldnames:
-                    fieldnames.append('material_techumbre')
-                filas=[]
-                for row in reader:
-                    if row['IV4'].strip() in ['5','6','7']:
-                        row['material_techumbre']='Material precario'
-                    elif row['IV4'].strip() in ['1','2','3','4']:
-                        row['material_techumbre']='Material durable'
-                    elif row['IV4'].strip()=='9':
-                        row['material_techumbre']='No aplica'
-                    
-                    filas.append(row)
+                raise ValueError
+            
+            #Se agrega la nueva columna
+            if('material_techumbre') not in fieldnames:
+                fieldnames.append('material_techumbre')
+            filas=[]
+            for row in reader:
+                if row['IV4'].strip() in ['5','6','7']:
+                    row['material_techumbre']='Material precario'
+                elif row['IV4'].strip() in ['1','2','3','4']:
+                    row['material_techumbre']='Material durable'
+                elif row['IV4'].strip()=='9':
+                    row['material_techumbre']='No aplica'
+                
+                filas.append(row)
 
     except FileNotFoundError:
         print(f"Error: el archivo no fue encontrado")
     except PermissionError:
         print(f"Error: permiso de lectura denegado")
-    else:  
-        if not fieldnames is None:  
-            try:
-                with archivo_procesado.open('w', newline = "", encoding='utf-8')as file_csv:
-                        writer = csv.DictWriter(file_csv, fieldnames=fieldnames, delimiter=';')
-                        writer.writeheader()
-                        writer.writerows(filas)
-            except PermissionError:
-                print(f"Error: el acceso de escritura denegado")
-            else:
-                print("✅ Se agregó la columna material_techumbre con valores traducidos.")
+    except ValueError:
+        print(f"Error: archivo vacío")
+    else:
+        try:
+            with archivo_procesado.open('w', newline = "", encoding='utf-8')as file_csv:
+                    writer = csv.DictWriter(file_csv, fieldnames=fieldnames, delimiter=';')
+                    writer.writeheader()
+                    writer.writerows(filas)
+        except PermissionError:
+            print(f"Error: el acceso de escritura denegado")
+        else:
+            print("✅ Se agregó la columna material_techumbre con valores traducidos.")
 
 
 def generar_columna_densidad_hogar(path_copia_hogar):
@@ -119,50 +119,51 @@ def generar_columna_densidad_hogar(path_copia_hogar):
             header = csv_reader.fieldnames
             rows = list(csv_reader)
         
+        if header is None:
+            raise ValueError
+    
     except FileNotFoundError:
         print(f"Error: archivo no encontrado")
     except PermissionError:
         print(f"Error: acceso al archivo denegado")
+    except ValueError:
+        print(f"Error: archivo vacío")
     else:
-        
-        if header is None:
-            print(f"Error: archivo vacío")
+        # Actualizo el encabezado en caso de ser necesario
+        if not "DENSIDAD_HOGAR" in header:
+            header.append("DENSIDAD_HOGAR")
+
+        # Compruebo que existan las columnas necesarias
+        if not {"IX_TOT","IV2"}.issubset(header):
+                print(f"Error: falta una o más columnas para el procesamiento"
+                    " de los datos")
         else:
-            # Actualizo el encabezado en caso de ser necesario
-            if not "DENSIDAD_HOGAR" in header:
-                header.append("DENSIDAD_HOGAR")
-
-            # Compruebo que existan las columnas necesarias
-            if not {"IX_TOT","IV2"}.issubset(header):
-                    print(f"Error: falta una o más columnas para el procesamiento"
-                        " de los datos")
-            else:
-                # Actualizo las filas calculando la densidad según
-                # La cantidad de miembros y habitaciones
-                for row in rows:
-                    miembros = row["IX_TOT"]
-                    habitaciones = row["IV2"]
-                    if(miembros.isnumeric and habitaciones.isnumeric):
-                        miembros = int(miembros)
-                        habitaciones = int(habitaciones)
-                        if(miembros < habitaciones):
-                            row["DENSIDAD_HOGAR"] = "Bajo"
-                        elif(miembros <= habitaciones*2):
-                            row["DENSIDAD_HOGAR"] = "Medio"
-                        else:
-                            # Más de dos miembros por habitación
-                            row["DENSIDAD_HOGAR"] = "Alto"
+            # Actualizo las filas calculando la densidad según
+            # La cantidad de miembros y habitaciones
+            for row in rows:
+                miembros = row["IX_TOT"]
+                habitaciones = row["IV2"]
+                if(miembros.isnumeric and habitaciones.isnumeric):
+                    miembros = int(miembros)
+                    habitaciones = int(habitaciones)
+                    if(miembros < habitaciones):
+                        row["DENSIDAD_HOGAR"] = "Bajo"
+                    elif(miembros <= habitaciones*2):
+                        row["DENSIDAD_HOGAR"] = "Medio"
                     else:
-                        # Faltan datos o están mal cargados
-                        row["DENSIDAD_HOGAR"] = "Desconocido"
-
-                # Sobreescirbo el archivo con los datos actualizados
-                try:
-                    with open(path_copia_hogar, "w", newline = "") as file:
-                        csv_writer = csv.DictWriter(file, fieldnames=header, delimiter=";")
-                        csv_writer.writeheader()
-                        csv_writer.writerows(rows)
-                except PermissionError:
-                    print(f"Error. Acceso de escritura denegado")
+                        # Más de dos miembros por habitación
+                        row["DENSIDAD_HOGAR"] = "Alto"
                 else:
-                    print(f"✅ Se agregó la columna DENSIDAD_HOGAR")
+                    # Faltan datos o están mal cargados
+                    row["DENSIDAD_HOGAR"] = "Desconocido"
+
+            # Sobreescirbo el archivo con los datos actualizados
+            try:
+                with open(path_copia_hogar, "w", newline = "") as file:
+                    csv_writer = csv.DictWriter(file, fieldnames=header, delimiter=";")
+                    csv_writer.writeheader()
+                    csv_writer.writerows(rows)
+            except PermissionError:
+                print(f"Error. Acceso de escritura denegado")
+            else:
+                print(f"✅ Se agregó la columna DENSIDAD_HOGAR")
