@@ -158,3 +158,50 @@ def informar_aglomerados_punto11(path_procesado):
     print(f"\nTrimestre analizado: {ultimo_trimestre} del año {anio}")
     print(f"El aglomerado con mayor porcentaje de viviendas de material precario es {nombre_max} con : ({porcentajes_validos[max_aglomerado]:.2f}%)")
     print(f"El aglomerado con menor porcentaje de viviendas de material precario es {nombre_min} con : ({porcentajes_validos[min_aglomerado]:.2f}%)")
+
+def universitarios_en_viviendas_insuficientes(DATA_OUT_PATH):
+    hogar_path = DATA_OUT_PATH / "hogar_process.csv"
+    individual_path = DATA_OUT_PATH / "individual_process.csv"
+
+    anio = input("Ingrese el año que desea consultar: ")
+    if not anio.isdigit():
+        print("Por favor, ingrese un año válido.")
+        return
+
+    # Leer datos del hogar
+    datos_hogar = []
+    with open(hogar_path, encoding='utf-8') as f_hog:
+        reader = csv.DictReader(f_hog, delimiter=';')
+        for row in reader:
+            if row['ANO4'] == anio:
+                datos_hogar.append(row)
+
+    if not datos_hogar:
+        print(f"No hay datos cargados para el año {anio}.")
+        return
+
+    # Obtener el último trimestre disponible
+    ultimo_trimestre = max(int(row['TRIMESTRE']) for row in datos_hogar)
+
+    # Filtrar viviendas con condición de habitabilidad insuficiente
+    codusus_insuficientes = {
+        row['CODUSU'] for row in datos_hogar
+        if int(row['TRIMESTRE']) == ultimo_trimestre and row['CONDICION_DE_HABITABILIDAD'] == 'insuficiente'
+    }
+
+    # Leer datos del individual
+    datos_individual = []
+    with open(individual_path, encoding='utf-8') as f_ind:
+        reader = csv.DictReader(f_ind, delimiter=';')
+        for row in reader:
+            if row['ANO4'] == anio and int(row['TRIMESTRE']) == ultimo_trimestre:
+                datos_individual.append(row)
+
+    # Contar personas con NIVEL_ED en ['5', '6'] que vivan en esas viviendas
+    contador = sum(
+        1 for row in datos_individual
+        if row['CODUSU'] in codusus_insuficientes and row['NIVEL_ED'] in ['5', '6']
+    )
+
+    print(f"\nAño {anio} - Trimestre {ultimo_trimestre}:")
+    print(f"Cantidad de personas con nivel universitario o superior en viviendas con condición insuficiente: {contador}")
