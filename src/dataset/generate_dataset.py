@@ -97,3 +97,4 @@ def generar_columnas_hogar():
     #llamo a funciones de agregar columnas
     generar_hogar.generate_column_tipo_hogar(path_archivo_unico, path_archivo_procesado)    
     generar_hogar.generate_column_material_techumbre(path_archivo_procesado)
+    generar_hogar.generate_column_CONDICION_DE_HABITABILIDAD(path_archivo_procesado)
