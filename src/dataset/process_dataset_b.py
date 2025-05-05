@@ -1,9 +1,60 @@
 """SECCION B : información a obtener: consultas al dataset principal, del 9 al 13"""
 
 import csv
-
+from collections import defaultdict
 from src.utils.constants import diccionario_aglomerados
 
+def tabla_nivel_educativo_por_aglomerado_EJ_9B(individual_path):
+    # Pedir al usuario que elija un aglomerado
+    aglomerado_elegido = input("Ingrese el código del aglomerado a consultar: ").strip()
+
+    # Creamos una tabla donde la clave es (año, trimestre)
+    # y el valor es otro diccionario que cuenta personas por nivel educativo
+    tabla = defaultdict(lambda: defaultdict(int))
+
+    with open(individual_path, newline='', encoding='utf-8') as f:
+        reader = csv.DictReader(f, delimiter=';')
+        for row in reader:
+            if row['AGLOMERADO'] != aglomerado_elegido:
+                continue  # Filtrar por el aglomerado elegido
+
+            try:
+                edad = int(row['CH06'])
+                if edad < 18:
+                    continue  # Solo mayores de edad
+
+                año = int(row['ANO4'])
+                trimestre = int(row['TRIMESTRE'])
+                nivel_ed = int(row['NIVEL_ED'])
+                pondera = int(row['PONDERA'])
+
+                clave = (año, trimestre)
+                tabla[clave][nivel_ed] += pondera  # Sumamos con el peso muestral
+            except (ValueError, KeyError):
+                continue  # Saltear filas con datos faltantes o mal formateados
+
+    # Encabezado
+    print("\nTabla de mayores de edad por nivel educativo (ponderado):")
+    print("Año | Trimestre | Sin instr. | Prim. Inc. | Prim. Comp. | Sec. Inc. | Sec. Comp. | Sup. Univ.")
+
+    # Ordenar por año y trimestre descendente
+    for (año, trim) in sorted(tabla.keys(), reverse=True):
+        niveles = tabla[(año, trim)]
+        fila = [
+            año,
+            trim,
+            niveles.get(7, 0),  # Sin instrucción
+            niveles.get(1, 0),  # Primario incompleto
+            niveles.get(2, 0),  # Primario completo
+            niveles.get(3, 0),  # Secundario incompleto
+            niveles.get(4, 0),  # Secundario completo
+            niveles.get(5, 0) + niveles.get(6, 0)  # Universitario (incompleto + completo)
+        ]
+        print("{:<4} | {:<9} | {:<11} | {:<10} | {:<12} | {:<10} | {:<11} | {:<11}".format(*fila))
+        
+        
+        
+        
 def informar_tabla_porcentaje_10B(file_csv_individuos):
     """Pedir al usuario que seleccione dos aglomerados y a partir de la información
 contenida retornar una tabla que contenga el porcentaje de personas mayores de
