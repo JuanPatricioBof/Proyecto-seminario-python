@@ -59,3 +59,66 @@ def generate_column_material_techumbre(archivo_procesado):
             writer.writeheader()
             writer.writerows(filas)
     print("✅ Se agregó la columna material_techumbre con valores traducidos.")
+
+
+def clasificar_condicion_habitabilidad(agua, origen_agua, tiene_banio, ubicacion_banio, desague_banio, piso, inodoro):
+    """
+    Genera la columna CONDICION_DE_HABITABILIDAD según reglas basadas en IV6, IV7, IV8, IV9, IV11 y IV3.
+    Insuficiente:
+    (IV6 = 3) o (IV8 = 2) o (IV11 = 4) o (IV3 ≠ 1 y 2) o (IV9 = 3) o (IV7 ≠ 1, 2 y 3).
+    Regular:
+    (IV6 = 2) o (IV7 = 3) o (IV9 = 2) o (IV10 = 2 y 3) o (IV11 = 2 y 3) o (IV3 ≠ 1 y 2).
+    Saludables:
+    (IV6 = 1 y 2) y (IV7 = 1 y 2) y (IV8 = 1) y (IV9 = 1) y (IV3 = 1 y 2) y (IV11 = 1 y 2) y (IV10 = 1)
+    Buena: 
+    (IV6 = 1) y (IV7 = 1) y (IV8 = 1) y (IV9 = 1) y (IV3 = 1) y (IV11 = 1) y (IV10 = 1)
+    """
+    # Condición BUENA
+    if (agua == '1' and origen_agua == '1' and tiene_banio == '1' and
+        ubicacion_banio == '1' and desague_banio == '1' and piso == '1' and inodoro == '1'):
+        return 'buena'
+
+    # Condición SALUDABLE
+    elif (agua in ['1', '2'] and origen_agua in ['1', '2'] and tiene_banio == '1' and
+          ubicacion_banio == '1' and desague_banio in ['1', '2'] and piso in ['1', '2'] and inodoro == '1'):
+        return 'saludable'
+
+    # Condición REGULAR
+    elif ((agua == '2' or origen_agua == '3' or inodoro in ['2', '3'] or ubicacion_banio == '2' or
+           desague_banio in ['2', '3'] or piso not in ['1', '2'])):
+        return 'regular'
+
+    # Condición INSUFICIENTE
+    elif (agua == '3' or tiene_banio == '2' or desague_banio == '4' or
+          piso not in ['1', '2'] or ubicacion_banio == '3' or origen_agua not in ['1', '2', '3']):
+        return 'insuficiente'
+
+def generate_column_CONDICION_DE_HABITABILIDAD(archivo_procesado):
+    with open(archivo_procesado, 'r', encoding='utf-8') as file_csv:
+        reader = csv.DictReader(file_csv, delimiter=';')
+        fieldnames = reader.fieldnames
+
+        if 'CONDICION_DE_HABITABILIDAD' not in fieldnames:
+            fieldnames.append('CONDICION_DE_HABITABILIDAD')
+
+        filas = []
+        for row in reader:
+            agua = row['IV6']
+            origen_agua = row['IV7']
+            tiene_banio = row['IV8']
+            ubicacion_banio = row['IV9']
+            desague_banio = row['IV11']
+            piso = row['IV3']
+            inodoro = row['IV10']
+
+            row['CONDICION_DE_HABITABILIDAD'] = clasificar_condicion_habitabilidad(agua, origen_agua, tiene_banio, ubicacion_banio, desague_banio, piso, inodoro)
+
+            filas.append(row)
+
+    with open(archivo_procesado, 'w', newline='', encoding='utf-8') as file_csv:
+        writer = csv.DictWriter(file_csv, fieldnames=fieldnames, delimiter=';')
+        writer.writeheader()
+        writer.writerows(filas)
+
+    print("✅ Se agregó la columna CONDICION_DE_HABITABILIDAD.")
+
