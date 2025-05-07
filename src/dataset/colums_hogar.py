@@ -61,7 +61,6 @@ def generate_column_material_techumbre(archivo_procesado):
             if fieldnames is None:
                 raise ValueError
             
-<<<<<<< HEAD
             #Se agrega la nueva columna
             if('material_techumbre') not in fieldnames:
                 fieldnames.append('material_techumbre')
