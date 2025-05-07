@@ -1,7 +1,7 @@
 import streamlit as st
 
 st.title('Encuest.AR')
-
+st.markdown('Esta aplicacion permite analizar la Encuesta Permanente de Hogares (EPH) en Argentina.')
 st.subheader('¿QUE ES LA EPH?')
 st.markdown("""
 La Encuesta Permanente de Hogares (EPH) es un programa nacional de produccion permanente de indicadores sociales cuyo objetivo es conocer las caracteristicas socioeconomicas de la poblacion.

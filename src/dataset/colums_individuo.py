@@ -61,6 +61,7 @@ def generate_columna_NIVEL_ED_str(path_nuevo):
             if fieldnames is None:
                 raise ValueError
         
+
             # Agrego la nueva columna si no está
             if "NIVEL_ED_str" not in fieldnames:
                 fieldnames.append("NIVEL_ED_str")
@@ -99,7 +100,7 @@ def generate_columna_NIVEL_ED_str(path_nuevo):
         except PermissionError:
             print(f"Error: acceso de escritura denegado")
         else:
-            print("Se agrego la columna NIVEL_ED_str")
+            print("✅Se agrego la columna NIVEL_ED_str")
 
 
 def generate_columna_CONDICION_LABORAL(path_nuevo):
@@ -151,7 +152,7 @@ def generate_columna_CONDICION_LABORAL(path_nuevo):
         except PermissionError:
             print(f"Error: acceso de escritura denegado")
         else:
-            print("Se agrega la columna CONDICION_LABORAL")
+            print("✅Se agrega la columna CONDICION_LABORAL")
 
 
 def generar_columna_universitario_completo(path_nuevo):
@@ -233,3 +234,5 @@ def generar_columna_universitario_completo(path_nuevo):
                 print(f"Error. El archivo no puede ser sobreeescrito")
             else:
                 print(f"Columna 'UNIVERSITARIO_COMPLETO' generada")
+
+

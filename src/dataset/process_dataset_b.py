@@ -1,9 +1,60 @@
 """SECCION B : información a obtener: consultas al dataset principal, del 9 al 13"""
 
 import csv
-
+from collections import defaultdict
 from src.utils.constants import diccionario_aglomerados
 
+def tabla_nivel_educativo_por_aglomerado_EJ_9B(individual_path):
+    # Pedir al usuario que elija un aglomerado
+    aglomerado_elegido = input("Ingrese el código del aglomerado a consultar: ").strip()
+
+    # Creamos una tabla donde la clave es (año, trimestre)
+    # y el valor es otro diccionario que cuenta personas por nivel educativo
+    tabla = defaultdict(lambda: defaultdict(int))
+
+    with open(individual_path, newline='', encoding='utf-8') as f:
+        reader = csv.DictReader(f, delimiter=';')
+        for row in reader:
+            if row['AGLOMERADO'] != aglomerado_elegido:
+                continue  # Filtrar por el aglomerado elegido
+
+            try:
+                edad = int(row['CH06'])
+                if edad < 18:
+                    continue  # Solo mayores de edad
+
+                año = int(row['ANO4'])
+                trimestre = int(row['TRIMESTRE'])
+                nivel_ed = int(row['NIVEL_ED'])
+                pondera = int(row['PONDERA'])
+
+                clave = (año, trimestre)
+                tabla[clave][nivel_ed] += pondera  # Sumamos con el peso muestral
+            except (ValueError, KeyError):
+                continue  # Saltear filas con datos faltantes o mal formateados
+
+    # Encabezado
+    print("\nTabla de mayores de edad por nivel educativo (ponderado):")
+    print("Año | Trimestre | Sin instr. | Prim. Inc. | Prim. Comp. | Sec. Inc. | Sec. Comp. | Sup. Univ.")
+
+    # Ordenar por año y trimestre descendente
+    for (año, trim) in sorted(tabla.keys(), reverse=True):
+        niveles = tabla[(año, trim)]
+        fila = [
+            año,
+            trim,
+            niveles.get(7, 0),  # Sin instrucción
+            niveles.get(1, 0),  # Primario incompleto
+            niveles.get(2, 0),  # Primario completo
+            niveles.get(3, 0),  # Secundario incompleto
+            niveles.get(4, 0),  # Secundario completo
+            niveles.get(5, 0) + niveles.get(6, 0)  # Universitario (incompleto + completo)
+        ]
+        print("{:<4} | {:<9} | {:<11} | {:<10} | {:<12} | {:<10} | {:<11} | {:<11}".format(*fila))
+        
+        
+        
+        
 def informar_tabla_porcentaje_10B(file_csv_individuos):
     """Pedir al usuario que seleccione dos aglomerados y a partir de la información
 contenida retornar una tabla que contenga el porcentaje de personas mayores de
@@ -91,54 +142,56 @@ edad con secundario incompleto."""
 
 
 def informar_aglomerados_punto11(path_procesado):
-    # Pedir al usuario que seleccione un año
     anio = input("Ingrese el año que desea consultar: ")
     if not anio.isdigit():
         print("Por favor, ingrese un año válido.")
         return
 
-    datos = []  # Guardar los datos del año consultado
+    datos = []
     with path_procesado.open('r', encoding='utf-8') as file_csv:
         reader = csv.DictReader(file_csv, delimiter=';')
         for row in reader:
-            if row['ANO4'] == str(anio):
+            if row['ANO4'] == anio:
                 datos.append(row)
 
     if not datos:
         print(f"No hay datos cargados para el año {anio}.")
         return
 
-    # Obtener el trimestre más reciente del año
-    ultimo_trimestre = max(int(row['TRIMESTRE']) for row in datos)
+    # Como los datos están ordenados por año y trimestre en forma descendente,
+    # el primer registro del año es del trimestre más reciente
+    ultimo_trimestre = int(datos[0]['TRIMESTRE'])
+    datos_ultimo_trimestre = [
+        row for row in datos if int(row['TRIMESTRE']) == ultimo_trimestre
+    ]
 
-    # Filtrar solo datos del último trimestre
-    datos_ultimo_trimestre = [row for row in datos if int(row['TRIMESTRE']) == ultimo_trimestre]
-
-    # Contar viviendas totales y precarias por aglomerado
     viviendas_totales = {}
     viviendas_precarias = {}
 
     for row in datos_ultimo_trimestre:
         aglomerado = row['AGLOMERADO']
         tipo_material = row['material_techumbre'].strip().lower()
-        pondera = int(row["PONDERA"]) #agregado para sumar segun la cantidad de hogares
 
+        try:
+            pondera = int(row["PONDERA"])
+        except ValueError:
+            continue  # Saltar si el dato está mal cargado
 
         if aglomerado not in viviendas_totales:
             viviendas_totales[aglomerado] = 0
             viviendas_precarias[aglomerado] = 0
 
         viviendas_totales[aglomerado] += pondera
-        if tipo_material == 'material precario':
+        if tipo_material=='material precario':
             viviendas_precarias[aglomerado] += pondera
 
-    # Calcular porcentajes
     porcentajes = {}
     for aglomerado in viviendas_totales:
-        porcentaje = (viviendas_precarias[aglomerado] / viviendas_totales[aglomerado]) * 100
-        porcentajes[aglomerado] = porcentaje
+        total = viviendas_totales[aglomerado]
+        precarias = viviendas_precarias[aglomerado]
+        if total > 0:
+            porcentajes[aglomerado] = (precarias / total) * 100
 
-    # Filtrar solo aglomerados válidos (que estén en el diccionario)
     porcentajes_validos = {
         aglo: porcentaje
         for aglo, porcentaje in porcentajes.items()
@@ -156,5 +209,58 @@ def informar_aglomerados_punto11(path_procesado):
     nombre_min = diccionario_aglomerados[str(min_aglomerado)]
 
     print(f"\nTrimestre analizado: {ultimo_trimestre} del año {anio}")
-    print(f"El aglomerado con mayor porcentaje de viviendas de material precario es {nombre_max} con : ({porcentajes_validos[max_aglomerado]:.2f}%)")
-    print(f"El aglomerado con menor porcentaje de viviendas de material precario es {nombre_min} con : ({porcentajes_validos[min_aglomerado]:.2f}%)")
+    print("Porcentaje de viviendas con material precario por aglomerado:")
+
+    for aglo, porcentaje in sorted(porcentajes_validos.items(), key=lambda x: x[1], reverse=True):
+        nombre = diccionario_aglomerados[str(aglo)]
+        print(f"  - {nombre}: {porcentaje:.2f}%")
+
+    print(f"\nEl aglomerado con mayor porcentaje es {nombre_max} ({porcentajes_validos[max_aglomerado]:.2f}%)")
+    print(f"El aglomerado con menor porcentaje es {nombre_min} ({porcentajes_validos[min_aglomerado]:.2f}%)")
+
+def universitarios_en_viviendas_insuficientes(DATA_OUT_PATH):
+    hogar_path = DATA_OUT_PATH / "hogar_process.csv"
+    individual_path = DATA_OUT_PATH / "individual_process.csv"
+
+    anio = input("Ingrese el año que desea consultar: ")
+    if not anio.isdigit():
+        print("Por favor, ingrese un año válido.")
+        return
+
+    # Leer datos del hogar
+    datos_hogar = []
+    with open(hogar_path, encoding='utf-8') as f_hog:
+        reader = csv.DictReader(f_hog, delimiter=';')
+        for row in reader:
+            if row['ANO4'] == anio:
+                datos_hogar.append(row)
+
+    if not datos_hogar:
+        print(f"No hay datos cargados para el año {anio}.")
+        return
+
+    # Obtener el último trimestre disponible
+    ultimo_trimestre = max(int(row['TRIMESTRE']) for row in datos_hogar)
+
+    # Filtrar viviendas con condición de habitabilidad insuficiente
+    codusus_insuficientes = {
+        row['CODUSU'] for row in datos_hogar
+        if int(row['TRIMESTRE']) == ultimo_trimestre and row['CONDICION_DE_HABITABILIDAD'] == 'insuficiente'
+    }
+
+    # Leer datos del individual
+    datos_individual = []
+    with open(individual_path, encoding='utf-8') as f_ind:
+        reader = csv.DictReader(f_ind, delimiter=';')
+        for row in reader:
+            if row['ANO4'] == anio and int(row['TRIMESTRE']) == ultimo_trimestre:
+                datos_individual.append(row)
+
+    # Contar personas con NIVEL_ED en ['5', '6'] que vivan en esas viviendas
+    contador = sum(
+        1 for row in datos_individual
+        if row['CODUSU'] in codusus_insuficientes and row['NIVEL_ED'] in ['5', '6']
+    )
+
+    print(f"\nAño {anio} - Trimestre {ultimo_trimestre}:")
+    print(f"Cantidad de personas con nivel universitario o superior en viviendas con condición insuficiente: {contador}")
