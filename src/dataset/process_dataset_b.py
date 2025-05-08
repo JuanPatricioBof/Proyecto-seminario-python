@@ -5,6 +5,8 @@ from collections import defaultdict
 from src.utils.constants import diccionario_aglomerados
 
 def tabla_nivel_educativo_por_aglomerado_EJ_9B(individual_path):
+    """Genera tabla de niveles educativos para un aglomerado específico, mostrando cantidad de personas mayores de edad."""
+
     # Pedir al usuario que elija un aglomerado
     aglomerado_elegido = input("Ingrese el código del aglomerado a consultar: ").strip()
 
@@ -33,8 +35,12 @@ def tabla_nivel_educativo_por_aglomerado_EJ_9B(individual_path):
             except (ValueError, KeyError):
                 continue  # Saltear filas con datos faltantes o mal formateados
 
-    # Encabezado
-    print("\nTabla de mayores de edad por nivel educativo (ponderado):")
+    if not tabla:
+        print("\nNo se encontraron datos para el aglomerado especificado")
+        return
+
+   
+    print(f"\nTabla de mayores de edad por nivel educativo - Aglomerado{aglomerado_elegido} ")
     print("Año | Trimestre | Sin instr. | Prim. Inc. | Prim. Comp. | Sec. Inc. | Sec. Comp. | Sup. Univ.")
 
     # Ordenar por año y trimestre descendente
