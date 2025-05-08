@@ -269,8 +269,7 @@ def universitarios_en_viviendas_insuficientes(DATA_OUT_PATH):
     )
 
     print(f"\nAño {anio} - Trimestre {ultimo_trimestre}:")
-    print(f"Cantidad de personas con nivel universitario o superior en viviendas 
-          con condición insuficiente: {contador}")
+    print(f"Cantidad de personas con nivel universitario o superior en viviendas  con condición insuficiente: {contador}")
 
 def regiones_segun_porcentaje_inquilinos(hogar_path):
     """ Recibe la ruta al archivo e informa en orden las regiones en orden
@@ -385,15 +384,13 @@ def jubilados_condicion_habitabilidad_insuficiente(DATA_OUT_PATH):
             raise KeyError
 
         # busco que coincidan el ult año y trimestre
-        while not(fila_h is None) and not(fila_i is None) and
-        not(coincidencia):  
+        while not(fila_h is None) and not(fila_i is None) and not(coincidencia):  
             if(fila_h["ANO4"] == fila_i["ANO4"] and 
             fila_h["TRIMESTRE"] == fila_i["TRIMESTRE"]):
                 coincidencia = True       
             # comparo primero por año y despues por trimestre
             # avanzo el más nuevo porque las fechas van en orden descendente
-            elif(fila_h["ANO4"], fila_h["TRIMESTRE"]) <
-               (fila_i["ANO4"], fila_i["TRIMESTRE"]):
+            elif(fila_h["ANO4"], fila_h["TRIMESTRE"]) < (fila_i["ANO4"], fila_i["TRIMESTRE"]):
                fila_i = next(reader_i, None)
             else:
                 fila_h = next(reader_h, None)
