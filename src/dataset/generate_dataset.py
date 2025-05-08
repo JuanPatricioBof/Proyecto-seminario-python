@@ -11,67 +11,80 @@ import src.dataset.colums_hogar as generar_hogar
 import importlib
 
 import re
-
+import json
+from pathlib import Path
+from collections import defaultdict
 importlib.reload(generar_individuo)
 importlib.reload(generar_hogar)
 
-def join_data(encuesta):
-    """Genera un único archivo csv, puede ser de hogares o individuos"""
 
-    # generar path al archivo único e identificar qué encuesta estoy unificando
+def join_data(encuesta):
+    """Genera:
+    1. Un archivo CSV unificado ordenado por ANO4 y TRIMESTRE
+    2. Un archivo JSON con la estructura de años y trimestres
+    """
+    
+    # Configurar paths
     if encuesta == "hogar":
-        path_archivos_unidos = DATA_OUT_PATH / "usu_hogar.csv"
+        path_csv = DATA_OUT_PATH / "usu_hogar.csv"
+        path_json = DATA_OUT_PATH / "estructura_hogar.json"
         patron_nombre = "usu_hogar_*"
     else:
-        path_archivos_unidos = DATA_OUT_PATH / "usu_individual.csv"
+        path_csv = DATA_OUT_PATH / "usu_individual.csv"
+        path_json = DATA_OUT_PATH / "estructura_individual.json"
         patron_nombre = "usu_individual_*"
     
-    # Para controlar que el encabezado se escriba una sola vez
-    se_escribio_encabezado = False  
+    datos = []
+    headers = None
+    estructura = defaultdict(list)  # Para almacenar {año: [trimestres]}
 
-    # Extraer año y trimestre del nombre de la carpeta
-    def extraer_ano_trimestre(path):
-        nombre = path.name
-        match = re.search(r'(\d)er_Trim_(\d{4})', nombre)
-        if match:
-            trimestre = int(match.group(1))
-            ano = int(match.group(2))
-            return (ano, trimestre)
-        return (0, 0)
+    # Procesar archivos
+    for path_archivo in DATA_PATH.glob(f"**/{patron_nombre}"):
+        with path_archivo.open('r', encoding='utf-8') as f:
+            reader = csv.DictReader(f, delimiter=';')
+            
+            if headers is None:
+                headers = reader.fieldnames
+            
+            if not {'ANO4', 'TRIMESTRE'}.issubset(reader.fieldnames):
+                continue
+            
+            for row in reader:
+                datos.append(row)
+                # Registrar año y trimestre
+                año = row['ANO4']
+                trimestre = row['TRIMESTRE']
+                if trimestre not in estructura[año]:
+                    estructura[año].append(trimestre)
+    
+    if not datos:
+        print("No se encontraron datos válidos")
+        return
 
-    # Ordenar carpetas de data_eph por año y trimestre descendente
-    carpetas_trimestres = sorted(
-        [p for p in DATA_PATH.iterdir() if p.is_dir()],
-        key=extraer_ano_trimestre,
-        reverse=True
-    )
+    # Ordenar datos
+    datos_ordenados = sorted(
+        datos,
+        key=lambda x: (-int(x['ANO4']), -int(x['TRIMESTRE'])))
+    
+    # Escribir CSV
+    with path_csv.open('w', newline='', encoding='utf-8') as f:
+        writer = csv.DictWriter(f, fieldnames=headers, delimiter=';')
+        writer.writeheader()
+        writer.writerows(datos_ordenados)
+    
+    # Ordenar estructura y escribir JSON
+    estructura_ordenada = {
+        año: sorted(trimestres, key=int, reverse=True)
+        for año, trimestres in sorted(estructura.items(), key=lambda x: -int(x[0]))
+    }
+    
+    with path_json.open('w', encoding='utf-8') as f:
+        json.dump(estructura_ordenada, f, indent=2)
+    
+    print(f"Archivos generados exitosamente")
 
-    # Abro el archivo único para escribirlo
-    with path_archivos_unidos.open('w', newline="", encoding='utf-8') as salida:
-        writer = csv.writer(salida, delimiter=';')
-
-        # Recorro carpetas ordenadas
-        for path_trimestre in carpetas_trimestres:
-            # Recorro archivos del tipo deseado dentro de la carpeta
-            for path_archivo in path_trimestre.glob(patron_nombre):
-                with path_archivo.open('r', encoding='utf-8') as entrada:
-                    reader = csv.reader(entrada, delimiter=';')
-                    try:
-                        header = next(reader)  # separo encabezado
-                        print(f"Procesando: {path_archivo.name}")
-                    except StopIteration:
-                        print(f"El archivo {path_archivo.name} está vacío.")
-                        continue
-
-                    if not se_escribio_encabezado:
-                        writer.writerow(header)
-                        se_escribio_encabezado = True
-
-                    for row in reader:
-                        writer.writerow(row)
-
-    print("Dataset único generado.")
-
+        
+        
 def generar_columnas_individual():
     """En esta función agrego columnas nuevas al dataset unido de individual.
     La primera columna que agrego lo hago a partir del original y el nuevo.
