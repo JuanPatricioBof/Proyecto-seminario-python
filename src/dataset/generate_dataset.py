@@ -96,6 +96,7 @@ def generar_columnas_individual():
     generar_individuo.generar_columna_CH04_str(path_archivo_unico, path_archivo_procesado )
     generar_individuo.generate_columna_NIVEL_ED_str(path_archivo_procesado)
     generar_individuo.generate_columna_CONDICION_LABORAL(path_archivo_procesado)
+    generar_individuo.generar_columna_universitario_completo(path_archivo_procesado)
     #generar_individuo.generar_columna_X(path_archivo_procesado)
     
 
@@ -110,4 +111,6 @@ def generar_columnas_hogar():
     #llamo a funciones de agregar columnas
     generar_hogar.generate_column_tipo_hogar(path_archivo_unico, path_archivo_procesado)    
     generar_hogar.generate_column_material_techumbre(path_archivo_procesado)
+    generar_hogar.generar_columna_densidad_hogar(path_archivo_procesado)
     generar_hogar.generate_column_CONDICION_DE_HABITABILIDAD(path_archivo_procesado)
+

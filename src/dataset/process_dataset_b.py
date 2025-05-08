@@ -1,4 +1,4 @@
-"""SECCION B : información a obtener: consultas al dataset principal, del 9 al 13"""
+"""SECCION B : información a obtener: consultas al dataset principal, del 8 al 13"""
 
 import csv
 from collections import defaultdict
@@ -269,4 +269,195 @@ def universitarios_en_viviendas_insuficientes(DATA_OUT_PATH):
     )
 
     print(f"\nAño {anio} - Trimestre {ultimo_trimestre}:")
-    print(f"Cantidad de personas con nivel universitario o superior en viviendas con condición insuficiente: {contador}")
+    print(f"Cantidad de personas con nivel universitario o superior en viviendas 
+          con condición insuficiente: {contador}")
+
+def regiones_segun_porcentaje_inquilinos(hogar_path):
+    """ Recibe la ruta al archivo e informa en orden las regiones en orden
+        descendiente según su porcentaje de inquilinos. 
+        El porcentaje de inquilinos de cada región se calcula en base a la
+        cantidad de inquilinos (valor 3 en la columna "II7") sobre la cantidad
+        total de hogares de esa región. """
+
+    def region_str(num_region):
+        """Recibe el numero de región y lo traduce a texto según lo acordado en
+            el diseño de la EPH. En caso de encontrar un valor no válido, marca
+            la región como "Indefinida" """
+        match num_region:
+            case 1:
+                ans = "Gran Buenos Aires"
+            case 40:
+                ans = "Noroeste"
+            case 41:
+                ans = "Noreste"
+            case 42:
+                ans = "Cuyo"
+            case 43:
+                ans = "Pampeana"
+            case 44:
+                ans = "Patagonia"
+            case _:
+                ans = "Indefinida"
+        return ans
+
+    try:
+        with hogar_path.open("r", encoding = "utf-8") as file:
+            csv_reader = csv.DictReader(file, delimiter = ";")
+            header = csv_reader.fieldnames
+
+            if header is None:
+                # archivo vacio
+                raise ErrorValue
+            
+            if not({"REGION","II7","PONDERA"}.issubset(header)):
+                raise KeyError
+            
+            # data_hogar[region]: [cant_hogares_totales, cant_inquilinos]
+            data_hogar = {}
+            
+            for row in csv_reader:
+                region = row["REGION"]
+
+                # si no está cargada la región, la agrego
+                if not region in data_hogar:
+                    data_hogar[region] = [0, 0] 
+                
+                 # guardo hogares totales
+                data_hogar[region][0] += row["PONDERA"] 
+
+                # guardo inquilinos
+                if(row["II7"] == 3):
+                    data_hogar[region][1] += row["PONDERA"]  
+
+    except FileNotFound:
+        print(f"Error: el archivo no fue encontrado")
+    except PermissionError:
+        print(f"Error: permiso de lectura denegado")
+    except ValueError:
+        print(f"Error: archivo vacío")
+    except KeyError:
+        print(f"Error de formato: faltan una o más columnas para el procesamiento")
+    else:
+        # ordeno en orden descendente según porcentaje
+        data_hogar = dict(sort(data_hogar.items(), key = lambda item: 
+                         (float(item[1][1]*100)/float(item[1][0])), reverse = True))
+        
+        # Imprimo los datos ya ordenados
+        print(f"Regiones según su porcentaje de inquilinos: ")
+        for region, valores in data_hogar:
+            print(f"{region_str(region)}. ({(float(valores[1]*100)/float(valores[0]))}%)")
+                
+def jubilados_condicion_habitabilidad_insuficiente(DATA_OUT_PATH):
+    # pendiente : agregar docstring
+
+    hogar_path = DATA_OUT_PATH / "hogar_process.csv"
+    individual_path = DATA_OUT_PATH / "individual_process.csv"
+
+    try:
+        file_hogar = open(hogar_path,"r",encoding="utf-8")
+        file_individual = open(hogar_path,"r",encoding="utf-8")
+
+        reader_h = csv.DictReader(file_hogar, delimiter=";")
+        reader_i = csv.DictReader(file_individual, delimiter=";")
+
+        header_h = reader_h.fieldnames
+        header_i = reader_i.fieldnames
+
+        # compruebo que el archivo no esté vacío
+        if(header_h == None or header_i == None):
+            raise ValueError
+
+        ult_anio = 0
+        ult_trim = 0
+
+        fila_h = next(reader_h, None)
+        fila_i = next(reader_i, None)
+        coincidencia = False
+
+        # compruebo que existan todas las columnas que necesito
+
+        if not({"ANO4","TRIMESTRE","PONDERA","CODUSU","ESTADO",
+                "CAT_INACT"}.issubset(header_i)):
+            raise KeyError
+
+        if not({"ANO4","TRIMESTRE","PONDERA","CODUSU","AGLOMERADO",
+                "CONDICION_DE_HABITABILIDAD"}.issubset(header_h)):
+            raise KeyError
+
+        # busco que coincidan el ult año y trimestre
+        while not(fila_h is None) and not(fila_i is None) and
+        not(coincidencia):  
+            if(fila_h["ANO4"] == fila_i["ANO4"] and 
+            fila_h["TRIMESTRE"] == fila_i["TRIMESTRE"]):
+                coincidencia = True       
+            # comparo primero por año y despues por trimestre
+            # avanzo el más nuevo porque las fechas van en orden descendente
+            elif(fila_h["ANO4"], fila_h["TRIMESTRE"]) <
+               (fila_i["ANO4"], fila_i["TRIMESTRE"]):
+               fila_i = next(reader_i, None)
+            else:
+                fila_h = next(reader_h, None)
+        
+        # si no encuentro un archivo hogar e individual del mismo trimestre,
+        # no se pueden generar los datos
+        if not(coincidencia):
+            raise KeyError
+
+        # llegue al año y trimestre que necesito
+        anio = reader_i["ANO4"]
+        trimestre = reader_i["TRIMESTRE"]
+        
+        # data_jubilados[codigo_identificacion] = ponderacion
+        data_jubilados = {}
+        while(not fila_i is None)and(anio == fila_i["ANO4"] and trimestre == fila_i["TRIMESTRE"]):
+            if(fila_i["ESTADO"]=="3" and fila_i["CAT_INAC"] == "1"):
+
+                data_jubilados[fila_i["CODUSU"]] = fila_i["PONDERA"]
+            fila_i = next(reader_i, None)
+
+        file_individual.close()
+
+        # guarda para cada nro de aglomerado, una lista con la cant total de
+        # jubilados y la cant de jubilados con condicion de habitabilidad insuficiente
+        jubilados_por_aglomerado = {}
+        while(not fila_h is None)and(anio == fila_h["ANO4"] and trimestre == fila_h["TRIMESTRE"]):
+            if(fila_h["CODUSU"] in data_jubilados):
+                # si todavía no se cargó informacion del aglomerado, lo agrego
+                if not(fila_h["AGLOMERADO"] in jubilados_por_aglomerado):
+                    jubilados_por_aglomerado[fila_h["AGLOMERADO"]] = [0,0]  
+            
+                # sumo al total de jubilados
+                jubilados_por_aglomerado[fila_h["AGLOMERADO"]][0] += data_jubilados["CODUSU"]
+                
+                # sumo a la cant de jubilados con condicion insuficiente
+                if(fila_h["CONDICION_DE_HABITABILIDAD"]=="insuficiente"):
+                    jubilados_por_aglomerado[fila_h["AGLOMERADO"]][1] += data_jubilados["CODUSU"]
+            fila_h = next(reader_i, None)
+
+        file_hogar.close()
+
+    except FileNotFoundError:
+        print(f"Error: archivo no encontrado")
+    except PermissionError:
+        print(f"Error: acceso de lectura al archivo denegado")
+    except ValueError:
+        print(f"Error: archivo vacío")
+    except KeyError:
+        print(f"Error: faltan datos para el procesamiento")
+    else:
+        #imprimo el porcentaje para cada aglomerado
+        print(f"Porcentaje de jubilados en condición de habitabilidad insuficiente:")
+        for nro_aglomerado in diccionario_aglomerado:
+            if not(nro_aglomerado in jubilados_por_aglomerado):
+                print(f"{diccionario_aglomerado[nro_aglomerado]}: sin datos")
+            else:
+                # porcentaje = condicion_insuficiente*100 / total
+                porcentaje = float(float(jubilados_por_aglomerado[nro_aglomerado][1]*100)/
+                                   float(jubilados_por_aglomerado[nro_aglomerado[0]]))
+                print(f"{diccionario_aglomerado[nro_aglomerado]}: {porcentaje}%")
+
+
+
+
+                
+            
