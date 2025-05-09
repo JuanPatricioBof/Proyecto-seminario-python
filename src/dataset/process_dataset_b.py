@@ -120,8 +120,8 @@ edad con secundario incompleto."""
                 # sumo el total de aglomerados
                 tabla[año][trimestre][aglo]['total'] += cantidad
                 # sumo los aglomerados que cumplen
-                #if (row['NIVEL_ED_str'] == 'Secundario incompleto') and ( int( row['CH06'] ) > 60 ):
-                if (row['NIVEL_ED'] == '3') and ( int( row['CH06'] ) > 60 ):
+                if (row['NIVEL_ED_str'] == 'Secundario incompleto') and ( int( row['CH06'] ) > 60 ):
+                #if (row['NIVEL_ED'] == '3') and ( int( row['CH06'] ) > 60 ):
                     tabla[año][trimestre][aglo]['cumple'] += cantidad
 
     # calculo el porcentaje de aglomerado para cada trimestre y año
