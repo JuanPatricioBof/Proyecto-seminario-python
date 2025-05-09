@@ -149,6 +149,9 @@ edad con secundario incompleto."""
 
 
 def informar_aglomerados_punto11(path_procesado):
+    """ . Informar el aglomerado con mayor cantidad de viviendas con más de dos ocupantes
+y sin baño. Informar también la cantidad de ellas.
+"""
     anio = input("Ingrese el año que desea consultar: ")
     if not anio.isdigit():
         print("Por favor, ingrese un año válido.")

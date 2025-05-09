@@ -3,7 +3,7 @@
 ### Grupo 38. Integrantes:
 
 - Maia Paez
-- x
+- Facundo Carbone
 - x
 - x
 - x

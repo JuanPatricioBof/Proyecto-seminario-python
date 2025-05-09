@@ -199,8 +199,8 @@ def informar_aglomerados_porcentajes_5B(file_csv):
         print(f'{diccionario_aglomerados[codigo_aglom.zfill(2)]}: {aglomerados[codigo_aglom]['porcentaje']}%' )
 
 def informar_aglomerado_punto6(path_procesado):
-#Informar el nombre del  aglomerado con mayor cantidad de viviendas con más de dos ocupantes  sin baño. Informar también la cantidad de ellas.
- 
+  """Informar el aglomerado con mayor cantidad de viviendas con más de dos ocupantes
+y sin baño. Informar también la cantidad de ellas.""" 
 # 1. Abrir el archivo y leer el contenido:
   with path_procesado.open('r',encoding='utf-8') as file_csv:
         reader=csv.DictReader(file_csv,delimiter=';')
@@ -226,6 +226,8 @@ def informar_aglomerado_punto6(path_procesado):
   print(f"El aglomerado con mayor cantidad de viviendas sin baño y más de dos ocupantes es:{diccionario_aglomerados[str(max_aglomerado).zfill(2)]}({max_aglomerado}) con {max_count} viviendas.")
     
 def informar_nivel_universitario(path_procesado):
+    """ 7. Informar para cada aglomerado el porcentaje de personas que hayan cursado al
+menos en nivel universitario o superior. """
     total_por_aglomerado = {}
     universitarios_por_aglomerado = {}
 
