@@ -142,7 +142,7 @@ def generar_columna_densidad_hogar(path_copia_hogar):
             for row in rows:
                 miembros = row["IX_TOT"]
                 habitaciones = row["IV2"]
-                if(miembros.isnumeric and habitaciones.isnumeric):
+                if(miembros.isnumeric() and habitaciones.isnumeric()):
                     miembros = int(miembros)
                     habitaciones = int(habitaciones)
                     if(miembros < habitaciones):
