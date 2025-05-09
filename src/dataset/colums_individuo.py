@@ -204,14 +204,14 @@ def generar_columna_universitario_completo(path_nuevo):
             header.append("UNIVERSITARIO")
 
         # compruebo que el archivo contenga las columnas necesarias
-        if not {"CHO6", "CH12", "NIVEL_ED"}.issubset(header):
+        if not {"CH06", "CH12", "NIVEL_ED"}.issubset(header):
             print(f"Error: no se encontraron una o más columnas necesarias"
                     " para el procesamiento")
         else:
             # actualizo las filas
             for row in rows:
                 edad = row["CH06"]
-                if(edad.isnumeric):
+                if(edad.isnumeric()):
                     if(int(edad) >= 18):
                         if(row["NIVEL_ED"] == "6" or (row["CH12"] == "8" or
                           (row["CH12"] == "7" and row["CH13"] == "1"))):
@@ -233,6 +233,6 @@ def generar_columna_universitario_completo(path_nuevo):
             except PermissionError:
                 print(f"Error. El archivo no puede ser sobreeescrito")
             else:
-                print(f"Columna 'UNIVERSITARIO_COMPLETO' generada")
+                print(f"✅Se agregó la columna UNIVERSITARIO_COMPLETO")
 
 
