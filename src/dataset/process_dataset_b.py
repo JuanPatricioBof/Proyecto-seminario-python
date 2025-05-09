@@ -270,7 +270,6 @@ def universitarios_en_viviendas_insuficientes(DATA_OUT_PATH):
 
     print(f"\nAño {anio} - Trimestre {ultimo_trimestre}:")
     print(f"Cantidad de personas con nivel universitario o superior en viviendas  con condición insuficiente: {contador}")
-    print()
 
 def regiones_segun_porcentaje_inquilinos(hogar_path):
     """ Recibe la ruta al archivo e informa las regiones en orden
@@ -347,7 +346,6 @@ def regiones_segun_porcentaje_inquilinos(hogar_path):
         for region in data_hogar:
             print(f"{region_str(region)}. ({(float(data_hogar[region][1]*100)/
             float(data_hogar[region][0]))}%)")
-        print()
                 
 
 def jubilados_condicion_habitabilidad_insuficiente(DATA_OUT_PATH):
@@ -457,7 +455,6 @@ def jubilados_condicion_habitabilidad_insuficiente(DATA_OUT_PATH):
                 # porcentaje = condicion_insuficiente*100 / total
                 porcentaje = (jubilados_por_aglomerado[nro_aglomerado][1]*100)/(jubilados_por_aglomerado[nro_aglomerado][0])
                 print(f"{diccionario_aglomerados[nro_aglomerado]}: {porcentaje}%")
-        print()
 
 
 
