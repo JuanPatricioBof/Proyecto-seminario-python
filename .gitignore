@@ -3,6 +3,9 @@ files/data_out/*
 # menos .gitkeep, para q la carpeta se suba al repositorio 
 !files/data_out/.gitkeep
 
+files/data_eph/*
+!files/data_eph/.gitkeep
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
