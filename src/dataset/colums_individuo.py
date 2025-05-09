@@ -225,7 +225,7 @@ def generar_columna_universitario_completo(path_nuevo):
 
             # sobreescribo el archivo con los cambios
             try:
-                with open(path_nuevo, "w", newline = "") as file:
+                with open(path_nuevo, "w", encoding="utf-8", newline = "") as file:
                     csv_writer = csv.DictWriter(file, fieldnames=header,
                                                 delimiter=";")
                     csv_writer.writeheader()
