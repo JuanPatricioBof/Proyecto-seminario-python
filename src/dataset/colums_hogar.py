@@ -121,3 +121,4 @@ def generate_column_CONDICION_DE_HABITABILIDAD(archivo_procesado):
         writer.writerows(filas)
 
     print("✅ Se agregó la columna CONDICION_DE_HABITABILIDAD.")
+
