@@ -5,58 +5,59 @@ from collections import defaultdict
 from src.utils.constants import diccionario_aglomerados
 
 def tabla_nivel_educativo_por_aglomerado_EJ_9B(individual_path):
-    """Genera tabla de niveles educativos para un aglomerado específico, mostrando cantidad de personas mayores de edad."""
+    """Genera tabla de niveles educativos para un aglomerado específico."""
+    
+    # Pedir y normalizar input (elimina ceros izquierda para comparación)
+    aglomerado_elegido = input("\nIngrese el código del aglomerado (ej: 2 o 02 para La Plata): ").strip().lstrip("0")
+    if not aglomerado_elegido:  # Si ingresa "0" o ""
+        aglomerado_elegido = "0"
 
-    # Pedir al usuario que elija un aglomerado
-    aglomerado_elegido = input("Ingrese el código del aglomerado a consultar: ").strip()
-
-    # Creamos una tabla donde la clave es (año, trimestre)
-    # y el valor es otro diccionario que cuenta personas por nivel educativo
     tabla = defaultdict(lambda: defaultdict(int))
 
-    with open(individual_path, newline='', encoding='utf-8') as f:
+    with open(individual_path, newline='', encoding='latin-1') as f:
         reader = csv.DictReader(f, delimiter=';')
         for row in reader:
-            if row['AGLOMERADO'] != aglomerado_elegido:
-                continue  # Filtrar por el aglomerado elegido
+            # Normaliza el aglomerado del CSV (elimina ceros izquierda)
+            aglo_csv = row['AGLOMERADO'].lstrip("0") or "0"  # "02" -> "2", "00" -> "0"
+            
+            if aglo_csv != aglomerado_elegido:
+                continue
 
             try:
                 edad = int(row['CH06'])
                 if edad < 18:
-                    continue  # Solo mayores de edad
+                    continue
 
                 año = int(row['ANO4'])
                 trimestre = int(row['TRIMESTRE'])
                 nivel_ed = int(row['NIVEL_ED'])
-                pondera = int(row['PONDERA'])
+                pondera = float(row['PONDERA'])
 
                 clave = (año, trimestre)
-                tabla[clave][nivel_ed] += pondera  # Sumamos con el peso muestral
+                tabla[clave][nivel_ed] += pondera
             except (ValueError, KeyError):
-                continue  # Saltear filas con datos faltantes o mal formateados
+                continue
 
     if not tabla:
-        print("\nNo se encontraron datos para el aglomerado especificado")
+        print(f"\nNo se encontraron datos para el aglomerado {aglomerado_elegido}")
         return
 
-   
-    print(f"\nTabla de mayores de edad por nivel educativo - Aglomerado{aglomerado_elegido} ")
+    # Mostrar resultados (similar a tu versión original)
+    print(f"\nTabla para aglomerado {aglomerado_elegido}:")
     print("Año | Trimestre | Sin instr. | Prim. Inc. | Prim. Comp. | Sec. Inc. | Sec. Comp. | Sup. Univ.")
-
-    # Ordenar por año y trimestre descendente
     for (año, trim) in sorted(tabla.keys(), reverse=True):
         niveles = tabla[(año, trim)]
         fila = [
             año,
             trim,
-            niveles.get(7, 0),  # Sin instrucción
-            niveles.get(1, 0),  # Primario incompleto
-            niveles.get(2, 0),  # Primario completo
-            niveles.get(3, 0),  # Secundario incompleto
-            niveles.get(4, 0),  # Secundario completo
-            niveles.get(5, 0) + niveles.get(6, 0)  # Universitario (incompleto + completo)
+            f"{niveles.get(7, 0):,.0f}",
+            f"{niveles.get(1, 0):,.0f}",
+            f"{niveles.get(2, 0):,.0f}",
+            f"{niveles.get(3, 0):,.0f}",
+            f"{niveles.get(4, 0):,.0f}",
+            f"{niveles.get(5, 0) + niveles.get(6, 0):,.0f}"
         ]
-        print("{:<4} | {:<9} | {:<11} | {:<10} | {:<12} | {:<10} | {:<11} | {:<11}".format(*fila))
+        print("{:<4} | {:<9} | {:<11} | {:<10} | {:<12} | {:<8} | {:<9} | {:<12}".format(*fila))
         
         
         
