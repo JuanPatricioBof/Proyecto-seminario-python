@@ -270,9 +270,10 @@ def universitarios_en_viviendas_insuficientes(DATA_OUT_PATH):
 
     print(f"\nAño {anio} - Trimestre {ultimo_trimestre}:")
     print(f"Cantidad de personas con nivel universitario o superior en viviendas  con condición insuficiente: {contador}")
+    print()
 
 def regiones_segun_porcentaje_inquilinos(hogar_path):
-    """ Recibe la ruta al archivo e informa en orden las regiones en orden
+    """ Recibe la ruta al archivo e informa las regiones en orden
         descendiente según su porcentaje de inquilinos. 
         El porcentaje de inquilinos de cada región se calcula en base a la
         cantidad de inquilinos (valor 3 en la columna "II7") sobre la cantidad
@@ -341,6 +342,7 @@ def regiones_segun_porcentaje_inquilinos(hogar_path):
         data_hogar = dict(sorted(data_hogar.items(), key = lambda item: 
                          (float(item[1][1]*100)/float(item[1][0])), reverse = True))
         
+        print("Regiones en orden según % de inquilinos")
         # Imprimo los datos ya ordenados
         for region in data_hogar:
             print(f"{region_str(region)}. ({(float(data_hogar[region][1]*100)/
@@ -446,6 +448,8 @@ def jubilados_condicion_habitabilidad_insuficiente(DATA_OUT_PATH):
         print(f"Error: faltan datos para el procesamiento")
     else:
         #imprimo el porcentaje para cada aglomerado
+        print(f"Porcentaje de jubilados con condicion de habitabilidad insuficiente según región ("
+              f"año: {anio}, trimestre: {trimestre})")
         for nro_aglomerado in diccionario_aglomerados:
             if not(nro_aglomerado in jubilados_por_aglomerado):
                 print(f"{diccionario_aglomerados[nro_aglomerado]}: sin datos")
