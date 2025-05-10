@@ -53,7 +53,7 @@ def alfabetismo_por_ano(path_procesado):
         print(f"  No sabe leer y escribir: {round(porcentaje_no, 2)}%\n")
 
 def extranjeros_con_estudios_universitarios(path_procesado):
-    # Pedir año y trimestre al usuario
+    """Cantidad de extranjeros que cursaron un nivel universitario o superior a partir del año y trimestre ingresado por el usuario"""
     ano_input = input("Ingrese el año: ").strip()
     trimestre_input = input("Ingrese el trimestre (1 a 4): ").strip()
 

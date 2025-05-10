@@ -3,10 +3,10 @@
 import csv
 
 def generate_column_tipo_hogar(archivo_original, archivo_procesado):
-    #Se debe generar una nueva columna llamada TIPO_HOGAR que indica el tipo de hogar:
-    #"Unipersonal" (una persona).
-    #"Nuclear" (2 a 4 personas).
-    #"Extendido" (5 o más personas).
+    """Se debe generar una nueva columna llamada TIPO_HOGAR que indica el tipo de hogar:
+    "Unipersonal" (una persona).
+    "Nuclear" (2 a 4 personas).
+    "Extendido" (5 o más personas)."""
     try:
         #Abrir el archivo y leer el contenido:
         with archivo_original.open('r',encoding='utf-8') as file_csv:
@@ -202,6 +202,7 @@ def clasificar_condicion_habitabilidad(agua, origen_agua, tiene_banio, ubicacion
         return 'insuficiente'
 
 def generate_column_CONDICION_DE_HABITABILIDAD(archivo_procesado):
+    """Genera la columna CONDICION_DE_HABITABILIDAD según reglas basadas en IV6, IV7, IV8, IV9, IV11 y IV3."""
     with open(archivo_procesado, 'r', encoding='utf-8') as file_csv:
         reader = csv.DictReader(file_csv, delimiter=';')
         fieldnames = reader.fieldnames

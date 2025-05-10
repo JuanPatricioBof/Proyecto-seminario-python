@@ -4,8 +4,8 @@
 
 - Maia Paez
 - Facundo Carbone
-- x
-- x
+- Juan Patricio Bof
+- Rodrigo Perez Pieroni
 - x
 
 ## Pasos para instalar y ejecutar el proyecto.

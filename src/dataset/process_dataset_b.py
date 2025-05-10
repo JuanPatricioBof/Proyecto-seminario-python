@@ -229,6 +229,7 @@ y sin baño. Informar también la cantidad de ellas.
     print(f"El aglomerado con menor porcentaje es {nombre_min} ({porcentajes_validos[min_aglomerado]:.2f}%)")
 
 def universitarios_en_viviendas_insuficientes(DATA_OUT_PATH):
+    """cantidad de personas que hayan cursado nivel universitario o superior y que vivan en una vivienda con CONDICION_DE_HABITABILIDAD insuficiente"""
     hogar_path = DATA_OUT_PATH / "hogar_process.csv"
     individual_path = DATA_OUT_PATH / "individual_process.csv"
 
