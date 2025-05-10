@@ -73,6 +73,9 @@ Luego mover los datos descargados, sin modificar, a la carpeta `data_eph` del pr
 
 Desde VS hay que seleccionar el kernel del entorno virtual.
 
+Hay dos notebooks, el que procesa los datos de hogares y el que procesa los datos de individuos.
+Es importante, primero ejecutar la _sección A_ de ambos y luego la B. Ya que para la sección B tienen que estar generados los 2 dataset.
+
 Los códigos de cada notebook deben ejecutarse en orden, porque algunas secciones dependen de los datos generados en otras.
 
 ---
