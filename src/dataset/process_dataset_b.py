@@ -87,7 +87,11 @@ edad con secundario incompleto."""
     #pido al usuario que ingrese data
     aglo_A = input("Ingrese código de aglomerado:_").zfill(2)
     aglo_B = input("Ingrese código de aglomerado:_").zfill(2)
-
+    
+    if aglo_A not in diccionario_aglomerados or aglo_B not in diccionario_aglomerados:
+        print("Aglomerado/s inválido/s.")
+        return
+    
     tabla = {}
 
     # recorro el archivo procesado 
