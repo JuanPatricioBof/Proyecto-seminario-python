@@ -6,7 +6,7 @@
 - Facundo Carbone
 - Juan Patricio Bof
 - Rodrigo Perez Pieroni
-- x
+- Catalina Brochero
 
 ## Pasos para instalar y ejecutar el proyecto.
 
@@ -45,7 +45,7 @@ python -m venv venv      #crear entorno virtual
 
 .\venv\Scripts\activate      #activar entorno
 
-Get-Command python       #verificar q pyhton se ejecute en esta carpeta
+Get-Command python       #verificar que pyhton se ejecute en esta carpeta
 
 deactivate      #para desactivarlo
 ```
@@ -80,6 +80,6 @@ Los códigos de cada notebook deben ejecutarse en orden, porque algunas seccione
 
 ---
 
-### ✅ Para ver la página web ejecutamos en la terminar
+### ✅ Para ver la página web ejecutamos en la terminal
 
 `streamlit run EncuestAR.py`
