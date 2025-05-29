@@ -19,12 +19,8 @@ importlib.reload(generar_hogar)
 
 
 def join_data(encuesta):
-    """Genera:
-    1. Un archivo CSV unificado ordenado por ANO4 y TRIMESTRE
-    2. Un archivo JSON con la estructura de años y trimestres
-    """
-    
-    # Configurar paths
+    """Genera archivos CSV y JSON unificados"""
+    # Configuración de paths (igual que antes)
     if encuesta == "hogar":
         path_csv = DATA_OUT_PATH / "usu_hogar.csv"
         path_json = DATA_OUT_PATH / "estructura_hogar.json"
@@ -36,43 +32,50 @@ def join_data(encuesta):
     
     datos = []
     headers = None
-    estructura = defaultdict(list)  # Para almacenar {año: [trimestres]}
+    estructura = defaultdict(list)
 
-    # Procesar archivos
+    # Procesar archivos 
     for path_archivo in DATA_PATH.glob(f"**/{patron_nombre}"):
         with path_archivo.open('r', encoding='utf-8') as f:
             reader = csv.DictReader(f, delimiter=';')
-            
+            # Verificacion  para el primer archivo
             if headers is None:
+                # Chequeo estricto de encabezados
+                if any(h in [None, ''] for h in reader.fieldnames):
+                    continue  # Pasa al siguiente archivo
                 headers = reader.fieldnames
             
-            if not {'ANO4', 'TRIMESTRE'}.issubset(reader.fieldnames):
+            # Verificación para archivos posteriores
+            current_headers = reader.fieldnames
+            if current_headers != headers:
                 continue
-            
-            for row in reader:
+                
+            for row in reader:    
                 datos.append(row)
-                # Registrar año y trimestre
                 año = row['ANO4']
                 trimestre = row['TRIMESTRE']
                 if trimestre not in estructura[año]:
-                    estructura[año].append(trimestre)
-    
+                     estructura[año].append(trimestre)
+
     if not datos:
         print("No se encontraron datos válidos")
         return
 
-    # Ordenar datos
+    # Ordenar datos 
     datos_ordenados = sorted(
         datos,
         key=lambda x: (-int(x['ANO4']), -int(x['TRIMESTRE'])))
-    
-    # Escribir CSV
+
+    # Escribir CSV 
     with path_csv.open('w', newline='', encoding='utf-8') as f:
         writer = csv.DictWriter(f, fieldnames=headers, delimiter=';')
         writer.writeheader()
-        writer.writerows(datos_ordenados)
-    
-    # Ordenar estructura y escribir JSON
+        
+        # Filtrado final preventivo
+        for row in datos_ordenados:
+            writer.writerow(row)
+
+    # Escribir JSON 
     estructura_ordenada = {
         año: sorted(trimestres, key=int, reverse=True)
         for año, trimestres in sorted(estructura.items(), key=lambda x: -int(x[0]))
