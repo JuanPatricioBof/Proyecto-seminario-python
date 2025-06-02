@@ -1,19 +1,12 @@
-
-import importlib.readers
-from src.utils.constants import DATA_PATH, DATA_OUT_PATH
-
 import csv
+import json
+from pathlib import Path
 
+from src.utils.constants import DATA_PATH, DATA_OUT_PATH
 import src.dataset.colums_individuo as generar_individuo
-
 import src.dataset.colums_hogar as generar_hogar
 
 import importlib
-
-import re
-import json
-from pathlib import Path
-from collections import defaultdict
 importlib.reload(generar_individuo)
 importlib.reload(generar_hogar)
 
@@ -47,6 +40,12 @@ def verificar_anio_trimestre(path_archivo: Path, anio, trimestre) -> bool:
         info_anio_trimestre = {anio: [trimestre]}
     finally:
         try:
+            # Ordenar JSON
+            info_anio_trimestre = {
+                anio: sorted(trimestres, key=int, reverse=True)
+                for anio, trimestres in sorted(info_anio_trimestre.items(), key=lambda x: -int(x[0]))
+            }
+            # Guardar JSON actualizado
             with path_archivo.open('w', encoding='utf-8') as archivo:
                 json.dump(info_anio_trimestre, archivo, indent=2)
         except Exception as e:
@@ -60,7 +59,8 @@ def join_data():
     path_json = {'hogar':DATA_OUT_PATH / "estructura_hogares.json", 'individual': DATA_OUT_PATH / "estructura_individuos.json"}
     patron_hogar = "hogar"
     patron_individual = "individual"
-    for path_archivo in DATA_PATH.glob(f'*.txt'):
+
+    for path_archivo in DATA_PATH.glob(f'**/*.txt'): #(f'*.txt')
             try:
                 eph_actual = leer_eph(path_archivo)
             except ValueError as e:
