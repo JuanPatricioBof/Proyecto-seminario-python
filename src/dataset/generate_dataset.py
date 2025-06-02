@@ -104,8 +104,6 @@ def join_data():
             else:
                 raise ValueError(f"El archivo {path_archivo.name} no es un archivo válido de EPH.")
 
-    # nota: los JSON no están ordenados
-
 
 # def join_data():
 #     """Genera archivos CSV y JSON unificados"""
@@ -192,8 +190,62 @@ def join_data():
 #         json.dump(estructura_json_hogares, f, indent=2)
 #     print(f"Archivos generados exitosamente")
 
+def generar_columnas_csv_individual(archivo_original: Path, archivo_nuevo: Path):
+    """
+    Lee un CSV original y crea uno nuevo con columnas adicionales.
+    """
+    with archivo_original.open('r', encoding='utf-8') as entrada, \
+         archivo_nuevo.open('w', newline='', encoding='utf-8') as salida:
         
+        reader = csv.DictReader(entrada, delimiter=';')
+
+        nuevas_columnas = ['CH04_str', 'NIVEL_ED_str', 'CONDICION_LABORAL', 'UNIVERSITARIO']
+        fieldnames = reader.fieldnames + nuevas_columnas
         
+        writer = csv.DictWriter(salida, delimiter=';', fieldnames=fieldnames)
+        writer.writeheader()
+        
+        for fila in reader:
+            # CH04: sexo
+            fila['CH04_str'] = 'Masculino' if fila['CH04'] == '1' else 'Femenino'
+
+            # NIVEL_ED: nivel educativo
+            match fila['NIVEL_ED']:
+                case '1': fila['NIVEL_ED_str'] = "Primario incompleto"
+                case '2': fila['NIVEL_ED_str'] = "Primario completo"
+                case '3': fila['NIVEL_ED_str'] = "Secundario incompleto"
+                case '4': fila['NIVEL_ED_str'] = "Secundario completo"
+                case '5' | '6': fila['NIVEL_ED_str'] = "Superior o universitario"
+                case _: fila['NIVEL_ED_str'] = "Desconocido"
+
+            # CONDICION_LABORAL con if/elif en vez de match
+            estado = fila.get('ESTADO')
+            cat_ocup = fila.get('CAT_OCUP')
+
+            if estado == '1' and cat_ocup in ['1', '2']:
+                fila['CONDICION_LABORAL'] = 'Ocupado autónomo'
+            elif estado == '1' and cat_ocup in ['3', '4', '9']:
+                fila['CONDICION_LABORAL'] = 'Ocupado dependiente'
+            elif estado == '2':
+                fila['CONDICION_LABORAL'] = 'Desocupado'
+            elif estado == '3':
+                fila['CONDICION_LABORAL'] = 'Inactivo'
+            else:
+                fila['CONDICION_LABORAL'] = 'Sin información'
+
+            # UNIVERSITARIO (ejemplo: 1:Sí, 0: No, 2: no aplica)            
+            if int(fila['CH06']) > 60:
+                # Mayor de edad
+                if(fila["NIVEL_ED"] == "6" or (fila["CH12"] == "8" or (fila["CH12"] == "7" and fila["CH13"] == "1"))):
+                    fila["UNIVERSITARIO"] = '1'  # sí
+                else:
+                    fila["UNIVERSITARIO"] = '0'  # no
+            else:
+                fila['UNIVERSITARIO'] = '2'
+            
+            writer.writerow(fila)
+
+
 def generar_columnas_individual():
     """En esta función agrego columnas nuevas al dataset unido de individual.
     La primera columna que agrego lo hago a partir del original y el nuevo.
