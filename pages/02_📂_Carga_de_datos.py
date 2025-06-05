@@ -1,5 +1,4 @@
 import streamlit as st
-import os
 import sys
 from pathlib import Path
 from src.utils.constants import SRC_PATH
@@ -11,7 +10,7 @@ sys.path.append(str(SRC_PATH))
 
 import dataset.generate_dataset as join
 from function_streamlit import function_p2  
-from utils.constants import DATA_OUT_PATH, DATA_PATH
+from src.utils.constants import DATA_OUT_PATH, DATA_PATH
 
 st.title("📁 Carga de datos")
 
@@ -27,6 +26,5 @@ else:
 if st.button("🔄 Forzar actualización del dataset"):
     with st.spinner("Actualizando datasets..."):
         # Llamada a la función para generar los archivos CSV
-        join.join_data("hogar")
-        join.join_data("individual")
+        join.join_data()
     st.success("✅ Dataset actualizado correctamente.")

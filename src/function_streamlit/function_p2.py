@@ -11,7 +11,7 @@ def obtener_periodos():
         tuple: ((año_más_antiguo, trimestre), (año_más_reciente, trimestre))
         None: Si no hay datos o el archivo no existe
     """
-    json_path = DATA_OUT_PATH / "estructura_individual.json"  # Path fijo a individuos
+    json_path = DATA_OUT_PATH / "estructura_individuos.json"  # Path fijo a individuos
     
     try:
         with json_path.open('r', encoding='utf-8') as f:
