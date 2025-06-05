@@ -111,6 +111,14 @@ def ano_y_trimestre_menor_desocupacion_PB_EJ3(path_procesado):
     print(f"El menor nivel de desocupacion fue en el ano {menor_clave[0]}, trimestre {menor_clave[1]}")
     
 def ranking_aglomerado_EJ4(DATA_OUT_PATH):
+    """
+    Calcula y muestra el top 5 de aglomerados con mayor porcentaje de hogares
+    que tienen 2 o más integrantes con estudios universitarios completos (NIVEL_ED=6).
+    
+    Args:
+        DATA_OUT_PATH (Path): Ruta donde se encuentran los archivos procesados
+                             'hogar_process.csv' e 'individual_process.csv'.
+    """
     hogar_path = DATA_OUT_PATH / "hogar_process.csv"
     individual_path = DATA_OUT_PATH / "individual_process.csv"
     
