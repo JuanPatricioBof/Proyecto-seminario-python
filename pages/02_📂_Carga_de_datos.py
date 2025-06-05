@@ -27,6 +27,5 @@ else:
 if st.button("🔄 Forzar actualización del dataset"):
     with st.spinner("Actualizando datasets..."):
         # Llamada a la función para generar los archivos CSV
-        join.join_data("hogar")
-        join.join_data("individual")
+        join.join_data()
     st.success("✅ Dataset actualizado correctamente.")

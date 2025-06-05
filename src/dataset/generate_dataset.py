@@ -58,7 +58,7 @@ def join_data():
     path_csv = {'hogar': DATA_OUT_PATH / "usu_hogar.csv", 'individual': DATA_OUT_PATH / "usu_individual.csv"}
     path_json = {'hogar':DATA_OUT_PATH / "estructura_hogares.json", 'individual': DATA_OUT_PATH / "estructura_individuos.json"}
     patron_hogar = "hogar"
-    patron_individual = "individual"
+    patron_individual = ["individual","persona"]
 
     for path_archivo in DATA_PATH.glob(f'**/*.txt'): #(f'*.txt')
             try:
@@ -83,7 +83,7 @@ def join_data():
                     except Exception as e:
                         raise Exception(f"Error al escribir en el archivo {path_csv['hogar'].name}: {e}")
         
-            elif patron_individual in path_archivo.name.lower(): # TODO Cambiar
+            elif any(p in path_archivo.name.lower() for p in patron_individual): # TODO Cambiar
                 eph_header = next(eph_actual)
                 primer_registro = next(eph_actual)
                 anio = primer_registro["ANO4"]
@@ -190,10 +190,12 @@ def join_data():
 #         json.dump(estructura_json_hogares, f, indent=2)
 #     print(f"Archivos generados exitosamente")
 
-def generar_columnas_csv_individual(archivo_original: Path, archivo_nuevo: Path):
+def generar_columnas_csv_individual():
     """
     Lee un CSV original y crea uno nuevo con columnas adicionales.
     """
+    archivo_original = DATA_OUT_PATH / "usu_individual.csv"
+    archivo_nuevo = DATA_OUT_PATH / "individual_process.csv"
     with archivo_original.open('r', encoding='utf-8') as entrada, \
          archivo_nuevo.open('w', newline='', encoding='utf-8') as salida:
         
