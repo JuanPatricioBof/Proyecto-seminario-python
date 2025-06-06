@@ -1,4 +1,6 @@
 import csv
+import json
+from src.utils.constants import DATA_OUT_PATH
 from collections import defaultdict
 from pathlib import Path
 from src.utils.constants import diccionario_aglomerados
@@ -6,6 +8,16 @@ from src.utils.constants import diccionario_aglomerados
 
 def alfabetismo_por_ano(path_procesado):
     """1. Informar año tras año el porcentaje de personas mayores a 6 años que saben y no saben leer y escribir (último trimestre del año)"""
+    json_individuos_path = DATA_OUT_PATH/"estructura_individuos.json"
+    # Cargar el JSON con los trimestres disponibles
+    with open(json_individuos_path, 'r', encoding='utf-8') as f:
+        trimestres_por_anio = json.load(f)
+
+    # Crear diccionario con el último trimestre disponible por año
+    ultimos_trimestres = {
+        anio: str(max(trimestres)) # usamos str porque en el CSV los trimestres son string
+        for anio, trimestres in trimestres_por_anio.items()
+    } 
     datos = {}
     with path_procesado.open('r', encoding='utf-8') as archivo:
         reader = csv.DictReader(archivo, delimiter=';')
@@ -15,49 +27,62 @@ def alfabetismo_por_ano(path_procesado):
                 trimestre = row['TRIMESTRE']
                 edad_raw = row['CH06'].strip()
                 ch09_raw = row['CH09'].strip()
+                pondera_raw = row['PONDERA'].strip()
 
-                if not edad_raw.isdigit() or ch09_raw not in ['1', '2']:
+                if not (edad_raw.isdigit() and ch09_raw in ['1', '2'] and pondera_raw.isdigit()):
+                    continue
+
+                if trimestre != ultimos_trimestres.get(ano):
                     continue
 
                 edad = int(edad_raw)
                 ch09 = int(ch09_raw)
+                pondera = int(pondera_raw)
 
                 if edad <= 6:
                     continue
 
-                clave = (ano, trimestre)
-                if clave not in datos:
-                    datos[clave] = []
-                datos[clave].append(ch09)
+                if ano not in datos:
+                    datos[ano] = []
+                datos[ano].append((ch09, pondera))
             except:
                 continue
 
-    # Guardar el último trimestre por año
-    ultimo_trimestre_por_anio = {}
-    for (ano, trimestre) in datos:
-        if ano not in ultimo_trimestre_por_anio:
-            ultimo_trimestre_por_anio[ano] = trimestre
-
     # Calcular e imprimir resultados
-    for ano in sorted(ultimo_trimestre_por_anio):
-        trimestre = ultimo_trimestre_por_anio[ano]
-        respuestas = datos[(ano, trimestre)]
-        total = len(respuestas)
-        si = respuestas.count(1)
-        no = respuestas.count(2)
+    for ano in sorted(datos):
+        respuestas = datos[ano]
+        total = sum(pondera for ch09, pondera in respuestas)
+        si = sum(pondera for ch09, pondera in respuestas if ch09 == 1)
+        no = sum(pondera for ch09, pondera in respuestas if ch09 == 2)
 
         porcentaje_si = (si / total) * 100 if total > 0 else 0
         porcentaje_no = (no / total) * 100 if total > 0 else 0
 
-        print(f"Año {ano} (trimestre {trimestre}):")
+        print(f"Año {ano} (trimestre {ultimos_trimestres[ano]}):")
         print(f"  Sabe leer y escribir: {round(porcentaje_si, 2)}%")
         print(f"  No sabe leer y escribir: {round(porcentaje_no, 2)}%\n")
 
 
 def extranjeros_con_estudios_universitarios(path_procesado):
-    """Cantidad de extranjeros que cursaron un nivel universitario o superior a partir del año y trimestre ingresado por el usuario"""
-    ano_input = input("Ingrese el año: ").strip()
-    trimestre_input = input("Ingrese el trimestre (1 a 4): ").strip()
+    """Informa el porcentaje de personas no nacidas en Argentina con nivel universitario o superior para un año y trimestre específico"""
+    json_individuos_path = DATA_OUT_PATH/"estructura_individuos.json"
+     # Cargar años y trimestres válidos desde el JSON
+    with open(json_individuos_path, 'r', encoding='utf-8') as f:
+        estructura = json.load(f)
+
+    try:
+        ano_input = input("Ingrese el año: ").strip()
+        if ano_input not in estructura:
+            raise ValueError(f"Año inválido. Años disponibles: {', '.join(estructura.keys())}")
+
+        trimestre_input = input("Ingrese el trimestre (1 a 4): ").strip()
+            
+        if trimestre_input not in estructura[ano_input]:
+            raise ValueError(f"Trimestre inválido. Trimestres disponibles para el año {ano_input}: {estructura[ano_input]}")
+
+    except ValueError as e:
+        print(f"Error: {e}")
+        return
 
     total_extranjeros = 0
     con_estudios_universitarios = 0
@@ -69,6 +94,7 @@ def extranjeros_con_estudios_universitarios(path_procesado):
             trimestre = row['TRIMESTRE'].strip()
             lugar_nacimiento = row['CH15'].strip()
             nivel_educativo = row['NIVEL_ED'].strip()
+            pondera_raw = row['PONDERA'].strip()
 
             # Filtrar por año y trimestre
             if ano != ano_input or trimestre != trimestre_input:
@@ -78,11 +104,16 @@ def extranjeros_con_estudios_universitarios(path_procesado):
             if lugar_nacimiento not in ['4', '5']:
                 continue
 
+            if not pondera_raw.isdigit():
+                continue
+            
+            pondera = int(pondera_raw)
+            total_extranjeros += pondera
+            
             # Validar que el nivel educativo esté entre los que se consideran universitarios
             if nivel_educativo in ['5', '6']:  # Universitario incompleto o completo
-                con_estudios_universitarios += 1
+                con_estudios_universitarios += pondera
 
-            total_extranjeros += 1
 
     if total_extranjeros == 0:
         print("No se encontraron personas extranjeras para ese año y trimestre.")
