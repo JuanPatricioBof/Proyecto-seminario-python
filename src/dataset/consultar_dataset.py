@@ -534,49 +534,66 @@ y sin baño. Informar también la cantidad de ellas.
 
 def universitarios_en_viviendas_insuficientes(hogar_path: Path, individual_path: Path):
     """cantidad de personas que hayan cursado nivel universitario o superior y que vivan en una vivienda con CONDICION_DE_HABITABILIDAD insuficiente"""
+    json_individuos_path = DATA_OUT_PATH/"estructura_individuos.json"
+    json_hogares_path = DATA_OUT_PATH/"estructura_hogares.json"
 
-    anio = input("Ingrese el año que desea consultar: ")
-    if not anio.isdigit():
-        print("Por favor, ingrese un año válido.")
+    # Leer ambos JSON desde dentro de la función
+    try:
+        with open(json_individuos_path, encoding='utf-8') as f_ind:
+            estructura_json_individuos = json.load(f_ind)
+
+        with open(json_hogares_path, encoding='utf-8') as f_hog:
+            estructura_json_hogares = json.load(f_hog)
+    except FileNotFoundError as e:
+        print(f"Error: {e.filename} no encontrado.")
         return
 
-    # Leer datos del hogar
-    datos_hogar = []
-    with open(hogar_path, encoding='utf-8') as f_hog:
+    # Pedir y validar input del usuario
+    anio = input("Ingrese el año que desea consultar: ").strip()
+
+    if anio not in estructura_json_individuos or anio not in estructura_json_hogares:
+        print("El año no está disponible en ambos conjuntos de datos.")
+        return
+
+    # Obtener el último trimestre de ambos
+    ult_trim_ind = max(estructura_json_individuos[anio], key=lambda t: int(t))
+    ult_trim_hog = max(estructura_json_hogares[anio], key=lambda t: int(t))
+
+    if ult_trim_ind != ult_trim_hog:
+        print(f"Conflicto: El último trimestre en individuos es {ult_trim_ind}, pero en hogares es {ult_trim_hog}.")
+        return
+    
+    ultimo_trimestre = ult_trim_ind
+
+    # Filtrar viviendas con condición insuficiente del archivo de hogar
+    codusus_insuficientes = set()
+    with hogar_path.open(encoding='utf-8') as f_hog:
         reader = csv.DictReader(f_hog, delimiter=';')
         for row in reader:
-            if row['ANO4'] == anio:
-                datos_hogar.append(row)
+            ano = row['ANO4'].strip()
+            trimestre = row['TRIMESTRE'].strip()
+            if ano == anio and trimestre == ultimo_trimestre:
+                if row['CONDICION_DE_HABITABILIDAD'].strip().lower() == 'insuficiente':
+                    codusus_insuficientes.add(row['CODUSU'].strip())
 
-    if not datos_hogar:
-        print(f"No hay datos cargados para el año {anio}.")
-        return
-
-    # Obtener el último trimestre disponible
-    ultimo_trimestre = max(int(row['TRIMESTRE']) for row in datos_hogar)
-
-    # Filtrar viviendas con condición de habitabilidad insuficiente
-    codusus_insuficientes = {
-        row['CODUSU'] for row in datos_hogar
-        if int(row['TRIMESTRE']) == ultimo_trimestre and row['CONDICION_DE_HABITABILIDAD'] == 'insuficiente'
-    }
-
-    # Leer datos del individual
-    datos_individual = []
-    with open(individual_path, encoding='utf-8') as f_ind:
+    # Leer archivo individual y acumular PONDERA si cumple condiciones
+    total_ponderado = 0
+    with individual_path.open(encoding='utf-8') as f_ind:
         reader = csv.DictReader(f_ind, delimiter=';')
         for row in reader:
-            if row['ANO4'] == anio and int(row['TRIMESTRE']) == ultimo_trimestre:
-                datos_individual.append(row)
+            ano = row['ANO4'].strip()
+            trimestre = row['TRIMESTRE'].strip()
+            if ano == anio and trimestre == ultimo_trimestre:
+                codusu = row['CODUSU'].strip()
+                nivel_ed = row['NIVEL_ED'].strip()
+                pondera = row['PONDERA'].strip()
 
-    # Contar personas con NIVEL_ED en ['5', '6'] que vivan en esas viviendas
-    contador = sum(
-        1 for row in datos_individual
-        if row['CODUSU'] in codusus_insuficientes and row['NIVEL_ED'] in ['5', '6']
-    )
+                if codusu in codusus_insuficientes and nivel_ed in ['5', '6']:
+                    if pondera.isdigit():
+                        total_ponderado += int(pondera)
 
     print(f"\nAño {anio} - Trimestre {ultimo_trimestre}:")
-    print(f"Cantidad de personas con nivel universitario o superior en viviendas  con condición insuficiente: {contador}")
+    print(f"Cantidad de personas con nivel universitario o superior en viviendas  con condición insuficiente: {total_ponderado}")
 
 
 def regiones_segun_porcentaje_inquilinos(hogar_path):
