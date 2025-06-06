@@ -1,17 +1,16 @@
 import streamlit as st
 import sys
 sys.path.append("..") # Acceso a src
-from pathlib import Path
 
 # Importar la función y las constantes
 from src.dataset.generar_dataset import join_data
-from src.function_streamlit import function_p2  
+from src.functions_streamlit.carga import obtener_periodos
 from src.utils.constants import DATA_OUT_PATH, DATA_PATH
 
 st.title("📁 Carga de datos")
 
 # Mostrar información sobre los periodos disponibles
-resultado = function_p2.obtener_periodos()
+resultado = obtener_periodos()
 if resultado:
     primero, ultimo = resultado
     st.markdown(f"✅ El sistema contiene información desde el **0{primero[1]}/{primero[0]}** hasta el **0{ultimo[1]}/{ultimo[0]}**.")

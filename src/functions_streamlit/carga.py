@@ -1,10 +1,9 @@
 """Pagina 02. Funciones para cargar datos"""
-
-from utils.constants import DATA_OUT_PATH
-import re
-
+import sys
+sys.path.append("..") # Acceso a src
+from src.utils.constants import DATA_OUT_PATH
 import json
-from pathlib import Path
+
 
 def obtener_periodos():
     """Obtiene el periodo más antiguo y más reciente desde el JSON de individuos
