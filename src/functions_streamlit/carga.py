@@ -1,3 +1,5 @@
+"""Pagina 02. Funciones para cargar datos"""
+
 from utils.constants import DATA_OUT_PATH
 import re
 

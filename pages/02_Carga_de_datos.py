@@ -1,15 +1,11 @@
 import streamlit as st
 import sys
+sys.path.append("..") # Acceso a src
 from pathlib import Path
-from src.utils.constants import SRC_PATH
-# Asegurar acceso al módulo src
-sys.path.append(str(SRC_PATH))
-
 
 # Importar la función y las constantes
-
-import dataset.generate_dataset as join
-from function_streamlit import function_p2  
+from src.dataset.generar_dataset import join_data
+from src.function_streamlit import function_p2  
 from src.utils.constants import DATA_OUT_PATH, DATA_PATH
 
 st.title("📁 Carga de datos")
@@ -26,5 +22,5 @@ else:
 if st.button("🔄 Forzar actualización del dataset"):
     with st.spinner("Actualizando datasets..."):
         # Llamada a la función para generar los archivos CSV
-        join.join_data()
+        join_data()
     st.success("✅ Dataset actualizado correctamente.")

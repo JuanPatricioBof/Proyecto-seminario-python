@@ -6,8 +6,6 @@ DATA_PATH = PROJECT_PATH / "files" /"data_eph" # Path to the "data_eph" director
 
 DATA_OUT_PATH = PROJECT_PATH / "files" /"data_out" # Path to the "data_out" directory
 
-SRC_PATH = PROJECT_PATH / "src" # Path to the "src" directory
-
 diccionario_aglomerados={
     '02' : 'Gran La Plata',
     '03' : 'Bahía Blanca - Cerri',
