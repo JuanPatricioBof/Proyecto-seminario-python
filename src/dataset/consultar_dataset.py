@@ -631,7 +631,7 @@ def regiones_segun_porcentaje_inquilinos(hogar_path):
 
             if header is None:
                 # archivo vacio
-                raise ErrorValue
+                raise ValueError
             
             if not({"REGION","II7","PONDERA"}.issubset(header)):
                 raise KeyError
