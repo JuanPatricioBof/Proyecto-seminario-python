@@ -680,8 +680,42 @@ def jubilados_condicion_habitabilidad_insuficiente(hogar_path: Path, individual_
         de jubilados que viven en una vivienda con CONDICION_DE_HABITABILIDAD 
         insuficiente.
     """
+    def generar_pares(anio_trimestre):
+        """Recibe el diccionario de años y trimestres y devuelve una lista de tuplas (año, trimestre) 
+        respetando el orden de la estructura original"""
+        ans = []
+        for anio in anio_trimestre:
+            for trimestre in anio_trimestre[anio]:
+                ans.append((anio,trimestre))
+        return ans
 
     try:
+        # abro los json para buscar el año y trimestre
+        ruta_json_individual = DATA_OUT_PATH / 'estructura_individuos.json'
+        ruta_json_hogar = DATA_OUT_PATH / 'estructura_hogares.json'
+        with open(ruta_json_hogar,'r') as json_hogar, open(ruta_json_individual,'r') as json_individual:
+            anio_trimestre_individual = json.load(json_individual)
+            anio_trimestre_hogar = json.load(json_hogar)
+
+        # genero dos listas de tuplas (año,trimestre) ordenadas descendentemente aprovechando el orden de los json      
+        pares_individual = generar_pares(anio_trimestre_individual)
+        pares_hogar = generar_pares(anio_trimestre_hogar)
+
+        # busco la primera coincidencia entre los elementos de las listas 
+        coincidencia = False
+        for fecha in pares_individual:
+            if fecha in pares_hogar:
+                coincidencia = True
+                anio = fecha[0]
+                trimestre = fecha[1]
+                break
+
+        # si no encuentro un archivo hogar e individual del mismo trimestre,
+        # no se pueden generar los datos
+        if not(coincidencia):
+            raise KeyError
+        
+        # abro los csv y genero los readers
         file_hogar = open(hogar_path,"r",encoding="utf-8")
         file_individual = open(individual_path,"r",encoding="utf-8")
         
@@ -690,16 +724,12 @@ def jubilados_condicion_habitabilidad_insuficiente(hogar_path: Path, individual_
         
         header_h = reader_h.fieldnames
         header_i = reader_i.fieldnames
-        # compruebo que el archivo no esté vacío
+
+        # compruebo que los archivos no estén vacíos
         if((header_h is None) or (header_i is None)):
             raise ValueError
 
-        fila_h = next(reader_h, None)
-        fila_i = next(reader_i, None)
-        coincidencia = False
-
         # compruebo que existan todas las columnas que necesito
-
         if not({"ANO4","TRIMESTRE","PONDERA","CODUSU","ESTADO",
                 "CAT_INAC"}.issubset(header_i)):
             raise KeyError
@@ -707,54 +737,40 @@ def jubilados_condicion_habitabilidad_insuficiente(hogar_path: Path, individual_
         if not({"ANO4","TRIMESTRE","PONDERA","CODUSU","AGLOMERADO",
                 "CONDICION_DE_HABITABILIDAD"}.issubset(header_h)):
             raise KeyError
-
-        # busco que coincidan el ult año y trimestre
-        while not(fila_h is None) and not(fila_i is None) and not(coincidencia):  
-            if(fila_h["ANO4"] == fila_i["ANO4"] and 
-            fila_h["TRIMESTRE"] == fila_i["TRIMESTRE"]):
-                coincidencia = True       
-            # comparo primero por año y despues por trimestre
-            # avanzo el más nuevo porque las fechas van en orden descendente
-            elif(fila_h["ANO4"], fila_h["TRIMESTRE"]) < (fila_i["ANO4"], fila_i["TRIMESTRE"]):
-               fila_i = next(reader_i, None)
-            else:
-                fila_h = next(reader_h, None)
         
-        # si no encuentro un archivo hogar e individual del mismo trimestre,
-        # no se pueden generar los datos
-        if not(coincidencia):
-            raise KeyError
+        # genero iteradores a las filas del año y trimestre a analizar
+        filas_csv_hogar = filter(lambda fila : fila["ANO4"]==str(anio) and fila["TRIMESTRE"]==str(trimestre), reader_h)
+        filas_csv_individual = filter(lambda fila : fila["ANO4"]==str(anio) and fila["TRIMESTRE"]==str(trimestre), reader_i)
 
-        # llegue al año y trimestre que necesito
-        anio = fila_i["ANO4"]
-        trimestre = fila_i["TRIMESTRE"]
         
-        # data_jubilados[codigo_identificacion] = ponderacion
+        # guarda para cada CODUSU perteneciente a jubilados, la cantidad de jubilados (ponderacion)
         data_jubilados = {}
-        while(not fila_i is None)and(anio == fila_i["ANO4"] and trimestre == fila_i["TRIMESTRE"]):
-            if(fila_i["ESTADO"]=="3" and fila_i["CAT_INAC"] == "1" and fila_i["PONDERA"].isnumeric()):
-                data_jubilados[fila_i["CODUSU"]] = int(fila_i["PONDERA"])
-            fila_i = next(reader_i, None)
+        for fila in filas_csv_individual:
+            # compruebo si son jubilados y guardo la informacion en el diccionario
+            if(fila["ESTADO"]=="3" and fila["CAT_INAC"] == "1" and fila["PONDERA"].isnumeric()):
+                data_jubilados[fila["CODUSU"]] = int(fila["PONDERA"])
 
         file_individual.close()
 
-        # guarda para cada nro de aglomerado, una lista con la cant total de
-        # jubilados y la cant de jubilados con condicion de habitabilidad insuficiente
+        # guarda para cada nro de aglomerado, una lista con la cantidad total de
+        # jubilados y la cantidad de jubilados con condicion de habitabilidad insuficiente
         jubilados_por_aglomerado = {}
-        while(not fila_h is None)and(anio == fila_h["ANO4"] and trimestre == fila_h["TRIMESTRE"]):
-            if(fila_h["CODUSU"] in data_jubilados and fila_h["PONDERA"].isnumeric()):
-                cod = fila_h["CODUSU"]
+        for fila in filas_csv_hogar:
+            if(fila["CODUSU"] in data_jubilados and fila["PONDERA"].isnumeric()):
+                cod = fila["CODUSU"]
+                aglomerado = fila["AGLOMERADO"]
+                ponderacion = int(fila["PONDERA"])
+
                 # si todavía no se cargó informacion del aglomerado, lo agrego
-                if not(fila_h["AGLOMERADO"] in jubilados_por_aglomerado):
-                    jubilados_por_aglomerado[fila_h["AGLOMERADO"]] = [0,0]  
+                if not(aglomerado in jubilados_por_aglomerado):
+                    jubilados_por_aglomerado[aglomerado] = [0,0]  
             
                 # sumo al total de jubilados
-                jubilados_por_aglomerado[fila_h["AGLOMERADO"]][0] += data_jubilados[cod] * int(fila_h["PONDERA"])
+                jubilados_por_aglomerado[aglomerado][0] += data_jubilados[cod] * ponderacion
 
                 # sumo a la cant de jubilados con condicion insuficiente
-                if(fila_h["CONDICION_DE_HABITABILIDAD"]=="insuficiente"):
-                    jubilados_por_aglomerado[fila_h["AGLOMERADO"]][1] += data_jubilados[cod] * int(fila_h["PONDERA"])
-            fila_h = next(reader_h, None)
+                if(fila["CONDICION_DE_HABITABILIDAD"]=="insuficiente"):
+                    jubilados_por_aglomerado[aglomerado][1] += data_jubilados[cod] * ponderacion
 
         file_hogar.close()
 
@@ -766,8 +782,11 @@ def jubilados_condicion_habitabilidad_insuficiente(hogar_path: Path, individual_
         print(f"Error: archivo vacío")
     except KeyError:
         print(f"Error: faltan datos para el procesamiento")
+    except Exception as e:
+        print(f"Error: {e}")
     else:
         #imprimo el porcentaje para cada aglomerado
+      #  print(data_jubilados)
         print(f"Porcentaje de jubilados con condicion de habitabilidad insuficiente según región ("
               f"año: {anio}, trimestre: {trimestre})")
         for nro_aglomerado in diccionario_aglomerados:
