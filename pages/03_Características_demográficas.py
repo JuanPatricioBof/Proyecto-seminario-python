@@ -1,8 +1,9 @@
 import streamlit as st
 import pandas as pd
 #import matplotlib.pyplot as plt
-from src.utils.loader import cargar_datos_en_session
+from src.utils.loader import cargar_parcial_csv, cargar_json
 from src.functions_streamlit.demografia import filtrar_individuos, agrupar_por_decada_y_genero, graficar_barras_dobles
+from src.utils.constants import DATA_OUT_PATH, PATHS
 
 colores = ["#FFB6C1", "#6495ED"]  # rosa claro y celeste pastel
 
@@ -14,15 +15,13 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# -------------------------
-# CARGA CON SESSION STATE
-# -------------------------
-cargar_datos_en_session()
+# AGREGAR para que solo cargue si los archivos existen
+#if st.session_state.datos_cargados:
 
-df_ind = st.session_state.df_individuos # DataFrame individuos
-df_hog = st.session_state.df_hogares # DataFrame hogares
-fechas_ind = st.session_state.fechas_individuos # Json individuos
-fechas_hog = st.session_state.fechas_hogares # Json hogares
+df_ind = cargar_parcial_csv(PATHS["individual"]["csv"], ['PONDERA','ANO4','TRIMESTRE','CH06']) # DataFrame individuos
+df_hog = cargar_parcial_csv(PATHS["hogar"]["csv"], ['PONDERA','ANO4','TRIMESTRE']) # DataFrame hogares
+fechas_ind = cargar_json(PATHS["individual"]["json"]) # Json individuos
+fechas_hog = cargar_json(PATHS["hogar"]["json"]) # Json hogares
 
 # -------------------------
 # INTERFAZ DE USUARIO

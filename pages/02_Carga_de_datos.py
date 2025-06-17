@@ -6,7 +6,6 @@ sys.path.append("..") # Acceso a src
 from src.dataset.generar_dataset import join_data
 from src.functions_streamlit.carga import obtener_periodos, verificar_correspondencia
 from src.utils.constants import DATA_OUT_PATH, DATA_PATH, PATHS
-from src.utils.loader import cargar_datos_en_session
 
 st.title("📁 Carga de datos")
 if not PATHS["hogar"]["json"].exists() or not PATHS["individual"]["json"].exists():
@@ -19,7 +18,6 @@ if not PATHS["hogar"]["json"].exists() or not PATHS["individual"]["json"].exists
              st.rerun()
     st.stop()
              
-cargar_datos_en_session()
 #Se verifica si todos los archivos de individuos esten en hogares y viceversa 
 lista_archivos_faltantes=verificar_correspondencia(PATHS["hogar"]["json"], PATHS["individual"]["json"])
 if lista_archivos_faltantes:
@@ -44,5 +42,4 @@ if st.button("🔄 Forzar actualización del dataset"):
         # Llamada a la función para generar los archivos CSV
          join_data()
          st.success("✅ Dataset actualizado correctamente.")
-         cargar_datos_en_session()
-         st.info("Datos actualizados y cargados en la sesión.")
+
