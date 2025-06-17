@@ -8,15 +8,16 @@ from src.utils.constants import DATA_OUT_PATH, PATHS
 # -------------------------
 
 @st.cache_data
-def cargar_csv(path):
+def cargar_parcial_csv(path, usecols=None):
     """
-    Lee un archivo CSV y lo retorna como DataFrame de pandas.
+    Lee un archivo CSV y lo retorna como DataFrame de pandas parcial.
     Args:
         path (str or Path): Ruta del archivo CSV.
+        usecols (list): lista de columnas a guardar
     Returns:
         pd.DataFrame: DataFrame con los datos cargados.
     """
-    return pd.read_csv(path, sep=";", decimal=",", low_memory=False)
+    return pd.read_csv(path, sep=";", decimal=",", low_memory=False, usecols=usecols)
 
 
 @st.cache_data
@@ -34,17 +35,17 @@ def cargar_json(path):
     return {int(k): [int(tri) for tri in v] for k, v in fechas.items()}
 
 
-def cargar_datos_en_session():
-    """Carga en session_state los dataframes y diccionario de fechas."""
+# def cargar_datos_en_session():
+#     """Carga en session_state los dataframes y diccionario de fechas"""
 
-    # Cargo DataFrames
-    if "df_individuos" not in st.session_state:
-        st.session_state.df_individuos = cargar_csv(PATHS["individual"]["csv"])
-    if "df_hogares" not in st.session_state:
-        st.session_state.df_hogares = cargar_csv(PATHS["hogar"]["csv"])
+#     # Cargo DataFrames
+#     if "df_individuos" not in st.session_state:
+#         st.session_state.df_individuos = cargar_csv(PATHS["individual"]["csv"])
+#     if "df_hogares" not in st.session_state:
+#         st.session_state.df_hogares = cargar_csv(PATHS["hogar"]["csv"])
     
-    # Cargo Json de fechas disponibles
-    if "fechas_individuos" not in st.session_state:
-        st.session_state.fechas_individuos = cargar_json(PATHS["individual"]["json"])
-    if "fechas_hogares" not in st.session_state:
-        st.session_state.fechas_hogares = cargar_json(PATHS["hogar"]["json"])
+#     # Cargo Json de fechas disponibles
+#     if "fechas_individuos" not in st.session_state:
+#         st.session_state.fechas_individuos = cargar_json(PATHS["individual"]["json"])
+#     if "fechas_hogares" not in st.session_state:
+#         st.session_state.fechas_hogares = cargar_json(PATHS["hogar"]["json"])
