@@ -1,5 +1,12 @@
 import streamlit as st
 
+st.set_page_config(
+     page_title="EncuestAR",      # Cambialo según la página
+     page_icon="📊",               # Podés usar emojis distintos en cada página
+     layout="wide",
+     initial_sidebar_state="expanded"
+)
+
 st.title('Encuest.AR')
 st.markdown('Esta aplicacion permite analizar la Encuesta Permanente de Hogares (EPH) en Argentina.')
 st.subheader('¿QUE ES LA EPH?')

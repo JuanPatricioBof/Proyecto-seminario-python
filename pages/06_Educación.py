@@ -1,23 +1,22 @@
 # app.py
 import streamlit as st
 from pathlib import Path
-from src.utils.constants import DATA_OUT_PATH, JSON_INDIVIDUOS_PATH
+from src.utils.constants import DATA_OUT_PATH, PATHS
 from src.functions_streamlit.educacion import cargar_datos, procesar_niveles_educativos, crear_grafico_barras, cargar_json
-
 # Configuración inicial
 st.set_page_config(layout="wide")
 st.title("📊 Nivel Educativo de la Población Argentina (EPH)")
 
 # 1. Cargar datos
-data_path = DATA_OUT_PATH / "individual_process.csv"
-df = cargar_datos(data_path)
+# Acceder a los DataFrames
+df = st.session_state.df_individuos
 
 # 3. Sidebar con filtros
 with st.sidebar:
     st.header("Filtros")
     
     # Cargamos los años disponibles
-    años_disponibles = cargar_json(JSON_INDIVIDUOS_PATH)
+    años_disponibles = cargar_json(PATHS["individual"]["json"])
     
     if not años_disponibles:
         st.warning("No se pudieron cargar los periodos disponibles")

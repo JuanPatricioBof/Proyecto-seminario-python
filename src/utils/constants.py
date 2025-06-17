@@ -6,9 +6,16 @@ DATA_PATH = PROJECT_PATH / "files" /"data_eph" # Path to the "data_eph" director
 
 DATA_OUT_PATH = PROJECT_PATH / "files" /"data_out" # Path to the "data_out" directory
 
-JSON_HOGARES_PATH = DATA_OUT_PATH / "estructura_hogares.json"
-
-JSON_INDIVIDUOS_PATH = DATA_OUT_PATH / "estructura_individuos.json"
+PATHS = {
+    "individual": {
+        "csv": DATA_OUT_PATH / "individual_process.csv",
+        "json": DATA_OUT_PATH / "estructura_individuos.json"
+    },
+    "hogar": {
+        "csv": DATA_OUT_PATH / "hogar_process.csv",
+        "json": DATA_OUT_PATH / "estructura_hogares.json"
+    }
+}
 
 diccionario_aglomerados={
     '02' : 'Gran La Plata',

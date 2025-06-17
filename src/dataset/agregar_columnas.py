@@ -17,9 +17,9 @@ def generar_columnas_csv_individual():
             reader = csv.DictReader(entrada, delimiter=';')
 
             nuevas_columnas = ['CH04_str', 'NIVEL_ED_str', 'CONDICION_LABORAL', 'UNIVERSITARIO']
-            fieldnames = reader.fieldnames + nuevas_columnas
+            nuevo_header = reader.fieldnames + nuevas_columnas
             
-            writer = csv.DictWriter(salida, delimiter=';', fieldnames=fieldnames)
+            writer = csv.DictWriter(salida, delimiter=';', fieldnames=nuevo_header)
             writer.writeheader()
             
             for fila in reader:
@@ -78,6 +78,82 @@ def generar_columnas_individual():
     generate_columna_CONDICION_LABORAL(path_archivo_procesado)
     generar_columna_universitario_completo(path_archivo_procesado)
     
+def generar_columnas_csv_hogar():
+    """Lee el archivo 'usu_hogar.csv' y genera un nuevo archivo 'hogar_process.csv' con columnas adicionales, 
+       las cuales son:
+        - TIPO_HOGAR (Unipersonal / Nuclear / Extendido)
+        - MATERIAL_TECHUMBRE (Material Precario / Material durable / No aplica)
+        - DENSIDAD_HOGAR (Bajo / Medio / Alto / Desconocido)
+        - CONDICION_DE_HABITABILIDAD (Insuficiente / Regular / Saludable / Buena)
+        """
+    
+    archivo_original = DATA_OUT_PATH / 'usu_hogar.csv'
+    archivo_nuevo = DATA_OUT_PATH / 'hogar_process.csv'
+    try:
+        with archivo_original.open('r', encoding='utf-8') as entrada, \
+                archivo_nuevo.open('w', newline='', encoding='utf-8') as salida:
+                reader = csv.DictReader(entrada, delimiter=';')
+
+                nuevas_columnas = ['TIPO_HOGAR', 'MATERIAL_TECHUMBRE', 'DENSIDAD_HOGAR', 'CONDICION_DE_HABITABILIDAD']
+                nuevo_header = reader.fieldnames + nuevas_columnas
+                
+                writer = csv.DictWriter(salida, delimiter=';', fieldnames=nuevo_header)
+                writer.writeheader()
+                
+                for fila in reader:
+                    #logica de cada columna
+
+                    # columna TIPO_HOGAR (según la cantidad de miembros)    
+                    if int(fila['IX_TOT'])==1:
+                        fila['TIPO_HOGAR']='Unipersonal'
+                    elif 2<= int(fila['IX_TOT'])<=4:
+                        fila['TIPO_HOGAR']='Nuclear'
+                    else:
+                        fila['TIPO_HOGAR']='Extendido'
+
+                    # columna MATERIAL_TECHUMBRE    
+                    if fila['IV4'].strip() in ['5','6','7']:
+                        fila['MATERIAL_TECHUMBRE']='Material precario'
+                    elif fila['IV4'].strip() in ['1','2','3','4']:
+                        fila['MATERIAL_TECHUMBRE']='Material durable'
+                    elif fila['IV4'].strip()=='9':
+                        fila['MATERIAL_TECHUMBRE']='No aplica'  
+
+                    # columna DENSIDAD_HOGAR
+                    miembros = fila["IX_TOT"]
+                    habitaciones = fila["IV2"]
+                    if(miembros.isnumeric() and habitaciones.isnumeric()):
+                        miembros = int(miembros)
+                        habitaciones = int(habitaciones)
+                        if(miembros < habitaciones):
+                            # Menos de un miembro por habitación
+                            fila["DENSIDAD_HOGAR"] = "Bajo"
+                        elif(miembros <= habitaciones*2):
+                            # Entre 1 y 2 miembros por habitación
+                            fila["DENSIDAD_HOGAR"] = "Medio"
+                        else:
+                            # Más de dos miembros por habitación
+                            fila["DENSIDAD_HOGAR"] = "Alto"
+                    else:
+                        # Faltan datos o están mal cargados
+                        fila["DENSIDAD_HOGAR"] = "Desconocido"
+
+                    # columna CONDICION_DE_HABITABILIDAD
+                    agua = fila['IV6']
+                    origen_agua = fila['IV7']
+                    tiene_banio = fila['IV8']
+                    ubicacion_banio = fila['IV9']
+                    desague_banio = fila['IV11']
+                    piso = fila['IV3']
+                    inodoro = fila['IV10']
+
+                    fila['CONDICION_DE_HABITABILIDAD'] = clasificar_condicion_habitabilidad(agua, origen_agua, tiene_banio, ubicacion_banio, desague_banio, piso, inodoro)
+
+                    writer.writerow(fila)
+    except Exception as e:
+        print(f'Error {e}.')
+
+            
 
 def generar_columnas_hogar():
     """En esta función agrego columnas nuevas al dataset unido hogar.
@@ -507,7 +583,7 @@ def clasificar_condicion_habitabilidad(agua, origen_agua, tiene_banio, ubicacion
     (IV6 = 3) o (IV8 = 2) o (IV11 = 4) o (IV3 ≠ 1 y 2) o (IV9 = 3) o (IV7 ≠ 1, 2 y 3).
     Regular:
     (IV6 = 2) o (IV7 = 3) o (IV9 = 2) o (IV10 = 2 y 3) o (IV11 = 2 y 3) o (IV3 ≠ 1 y 2).
-    Saludables:
+    Saludable:
     (IV6 = 1 y 2) y (IV7 = 1 y 2) y (IV8 = 1) y (IV9 = 1) y (IV3 = 1 y 2) y (IV11 = 1 y 2) y (IV10 = 1)
     Buena: 
     (IV6 = 1) y (IV7 = 1) y (IV8 = 1) y (IV9 = 1) y (IV3 = 1) y (IV11 = 1) y (IV10 = 1)
