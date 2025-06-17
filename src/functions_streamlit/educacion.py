@@ -4,9 +4,6 @@ import plotly.express as px
 from pathlib import Path
 import json
 
-def cargar_datos(path):
-    """Lée el csv y lo retorna como un DataFrame"""
-    return pd.read_csv(path, sep=";", decimal=",", low_memory=False)
 
 def procesar_niveles_educativos(df, año_seleccionado):
     """Procesa los datos educativos y devuelve un DataFrame con conteos ponderados"""
@@ -40,7 +37,3 @@ def crear_grafico_barras(conteo, año):
         title=f"Nivel Educativo - Año {año}"
     )
     return fig
-def cargar_json(path):
-    with open(path, 'r') as f:
-        fechas = json.load(f)
-    return {int(k): [int(vv) for vv in v] for k, v in fechas.items()}

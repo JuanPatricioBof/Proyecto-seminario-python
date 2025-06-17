@@ -1,6 +1,6 @@
 import csv
 import json
-from src.utils.constants import DATA_OUT_PATH, JSON_HOGARES_PATH,JSON_INDIVIDUOS_PATH
+from src.utils.constants import DATA_OUT_PATH,PATHS
 from collections import defaultdict
 from pathlib import Path
 from src.utils.constants import diccionario_aglomerados
@@ -155,10 +155,10 @@ def ranking_aglomerado_EJ4():
                              'hogar_process.csv' e 'individual_process.csv'.
     """    
     try:
-        hogar_path=DATA_OUT_PATH/ "usu_hogar.csv"
-        individual_path=DATA_OUT_PATH/"usu_individual.csv"
+        hogar_path= PATHS["hogar"]["csv"]
+        individual_path=PATHS["individual"]["csv"]
         # 1. Obtener el período más reciente del JSON
-        with open(JSON_INDIVIDUOS_PATH, 'r', encoding='utf-8') as f:
+        with open(PATHS["hogar"]["json"], 'r', encoding='utf-8') as f:
             periodos = json.load(f)
         
         ultimo_anio = max(periodos.keys())
@@ -186,13 +186,13 @@ def ranking_aglomerado_EJ4():
                     codusu = row.get('CODUSU')
                     aglomerado = row.get('AGLOMERADO')
 
-                if not codusu or not aglomerado:
-                    continue  # saltear si falta info
+                    if not codusu or not aglomerado:
+                         continue  # saltear si falta info
 
-                total_hogares[aglomerado] += 1
+                    total_hogares[aglomerado] += 1
 
-                if universitarios_por_hogar.get(codusu, 0) >= 2:
-                    hogares_calificados[aglomerado] += 1
+                    if universitarios_por_hogar.get(codusu, 0) >= 2:
+                         hogares_calificados[aglomerado] += 1
 
         # 3. Calcular porcentajes
         ranking = []
