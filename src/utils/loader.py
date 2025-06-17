@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import json
+import os
 from src.utils.constants import DATA_OUT_PATH, PATHS
 
 # -------------------------
@@ -33,6 +34,18 @@ def cargar_json(path):
     with open(path, 'r') as f:
         fechas = json.load(f)
     return {int(k): [int(tri) for tri in v] for k, v in fechas.items()}
+
+
+def file_exists(path):
+    """Verifica que el archivo exista
+
+    Args:
+        path (path or str): ruta al archivo
+
+    Returns:
+        boolean: True si existe, false si no.
+    """    
+    return os.path.exists(path)
 
 
 # def cargar_datos_en_session():
