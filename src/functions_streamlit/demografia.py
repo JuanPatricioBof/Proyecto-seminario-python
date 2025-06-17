@@ -3,6 +3,18 @@ import matplotlib.pyplot as plt
 
 
 def filtrar_individuos(df, año, trimestre, edad_min=0, edad_max=110):
+    """Filtra el dataframe por año,trimestre, y se asegura que la edad sea valida
+
+    Args:
+        df (dataframe): datos a filtrar
+        año (int): año elegido
+        trimestre (int): trimestre elegido
+        edad_min (int, optional): _description_. Defaults to 0.
+        edad_max (int, optional): _description_. Defaults to 110.
+
+    Returns:
+        dataframe: ya filtrado con las filas de interes
+    """    
     filtro = (
         (df["ANO4"] == año) &
         (df["TRIMESTRE"] == trimestre) &
@@ -13,13 +25,18 @@ def filtrar_individuos(df, año, trimestre, edad_min=0, edad_max=110):
 
 
 def agrupar_por_decada_y_genero(df):
-    """Agrupa por década y genero
-      Retorna un DataFrame donde las filas son las décadas y las columnas son los géneros:
+    """Agrupa por década y genero. Genera este dataframe
+    Retorna un DataFrame donde las filas son las décadas y las columnas son los géneros:
        CH06	    Femenino	Masculino
        0	    12345	    11340
        10	    15023	    14876
        20	    16789	    16112
-    """
+    Args:
+        df (dataframe): dataframe filtrado
+
+    Returns:
+        dataframe: [edad agrupada por decada, cantFemenino, cantMasculino]
+    """    
     agrupado = (
         df
         .groupby([
