@@ -36,3 +36,45 @@ def obtener_periodos():
     except (FileNotFoundError, json.JSONDecodeError, IndexError, KeyError) as e:
         print(f"Error al leer periodos: {str(e)}")
         return None
+def verificar_correspondencia(json_hogares, json_individuos):
+    """
+    Verifica la correspondencia entre archivos JSON de hogares e individuos de la EPH.
+    
+    Compara los años y trimestres registrados en los archivos JSON para detectar inconsistencias,
+    asegurando que cada registro en hogares.json tenga su correspondiente en individuos.json y viceversa.
+
+    Parameters
+    ----------
+    json_hogares : str or Path
+        Ruta del archivo JSON que contiene los datos de hogares (formato: {año: [trimestres]})
+    json_individuos : str or Path
+        Ruta del archivo JSON que contiene los datos de individuos (formato: {año: [trimestres]})
+
+    Returns
+    -------
+    list
+        Lista de mensajes con los faltantes detectados. Cada mensaje sigue el formato:
+        "En el archivo de [tipo], falta el trimestre: [X] del año: [Y]"
+        Retorna lista vacía si no hay inconsistencias.
+    """
+    faltantes = []
+    
+    # Cargar los datos
+    with open(json_hogares, 'r') as f:
+        datos_hogares = json.load(f)
+    with open(json_individuos, 'r') as f:
+        datos_individuos = json.load(f)
+
+    # Verificar hogares -> individuos
+    for año, trimestres in datos_hogares.items():
+        for trimestre in trimestres:
+            if año not in datos_individuos or trimestre not in datos_individuos[año]:
+                faltantes.append(f"En el archivo de individuos, falta el trimeste: {trimestre} del año: {año}")
+
+    # Verificar individuos -> hogares
+    for año, trimestres in datos_individuos.items():
+        for trimestre in trimestres:
+            if año not in datos_hogares or trimestre not in datos_hogares[año]:
+                faltantes.append(f"En el archivo de individuos, falta el trimeste: {trimestre} del año: {año}")
+
+    return faltantes
