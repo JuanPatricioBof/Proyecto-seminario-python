@@ -13,7 +13,7 @@ st.title("📊 Nivel Educativo de la Población Argentina (EPH)")
 df_ind = cargar_parcial_csv(PATHS["individual"]["csv"], ['PONDERA','ANO4','NIVEL_ED']) # DataFrame individuos
 
 fechas_ind = cargar_json(PATHS["individual"]["json"]) # Json individuos
-
+ 
 
 #  Sidebar con filtros
 with st.sidebar:
