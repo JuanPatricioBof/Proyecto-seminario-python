@@ -1,9 +1,9 @@
 """Pagina 06. Funciones educativas"""
 import pandas as pd
-import plotly.express as px
+import matplotlib.pyplot as plt
 from pathlib import Path
 import json
-
+from src.dataset.consultar_dataset import ranking_aglomerado_EJ4
 
 def procesar_niveles_educativos(df, año_seleccionado):
     """Procesa los datos educativos y devuelve un DataFrame con conteos ponderados"""
@@ -26,14 +26,36 @@ def procesar_niveles_educativos(df, año_seleccionado):
     return conteo.sort_values("Cantidad Ponderada", ascending=False)
 
 def crear_grafico_barras(conteo, año):
-    """Crea y devuelve un gráfico de barras Plotly"""
-    fig = px.bar(
-        conteo,
-        x="Nivel Educativo",
-        y="Cantidad Ponderada",
-        color="Nivel Educativo",
-        text_auto=True,
-        height=500,
-        title=f"Nivel Educativo - Año {año}"
+    """Crea y devuelve un gráfico de barras con Matplotlib"""
+    # Configuración del gráfico
+    plt.figure(figsize=(12, 6))
+    bars = plt.bar(
+        conteo["Nivel Educativo"],
+        conteo["Cantidad Ponderada"],
+        color=plt.cm.tab20.colors[:len(conteo)]  # Usar colores distintos
     )
-    return fig
+    
+    # Añadir etiquetas y título
+    plt.title(f"Nivel Educativo - Año {año}", fontsize=14, pad=20)
+    plt.xlabel("Nivel Educativo", fontsize=12)
+    plt.ylabel("Cantidad Ponderada", fontsize=12)
+    
+    # Rotar etiquetas del eje x para mejor legibilidad
+    plt.xticks(rotation=45, ha='right', fontsize=10)
+    
+    # Añadir valores en las barras
+    for bar in bars:
+        height = bar.get_height()
+        plt.text(
+            bar.get_x() + bar.get_width()/2., 
+            height,
+            f'{int(height):,}',
+            ha='center',
+            va='bottom',
+            fontsize=9
+        )
+    
+    # Ajustar márgenes
+    plt.tight_layout()
+    
+    return plt
