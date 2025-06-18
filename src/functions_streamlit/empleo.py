@@ -22,6 +22,63 @@ def format_number(x):
         return f"{x:,.0f}".replace(",", ".") if x == int(x) else f"{x:,.1f}".replace(",", ".")
     return x
 
+def evolucion_desempleo(df, fechas_disponibles, aglomerado=None):
+    """
+    Devuelve la tasa de desempleo por período (anio + trimestre), usando pandas de forma eficiente.
+    Si se pasa un aglomerado, filtra por él. Si no, considera todos.
+    """
+    df = df.copy()
+    df['AGLOMERADO'] = df['AGLOMERADO'].astype(str).str.zfill(2)
+
+    if aglomerado:
+        df = df[df['AGLOMERADO'] == aglomerado]
+
+    # Filtramos solo ocupados y desocupados
+    df = df[df['CONDICION_LABORAL'].isin(['Ocupado dependiente', 'Ocupado autónomo', 'Desocupado'])]
+
+    # Creamos columna para el período
+    df['PERIODO'] = df['ANO4'].astype(str) + 'T' + df['TRIMESTRE'].astype(str)
+
+    # Clasificamos ocupados/desocupados
+    df['ESTADO'] = df['CONDICION_LABORAL'].apply(lambda x: 'ocupado' if 'Ocupado' in x else 'desocupado')
+
+    # Agrupamos por PERIODO y ESTADO, y sumamos ponderaciones
+    resumen = df.groupby(['PERIODO', 'ESTADO'])['PONDERA'].sum().unstack(fill_value=0)
+
+    # Calculamos la tasa de desempleo
+    resumen['tasa_desempleo'] = (resumen['desocupado'] / (resumen['ocupado'] + resumen['desocupado'])) * 100
+
+    return resumen['tasa_desempleo'].round(2).sort_index().to_dict()
+
+
+def evolucion_empleo(df, fechas_disponibles, aglomerado=None):
+    """
+    Devuelve la tasa de empleo por período (anio + trimestre), usando pandas de forma eficiente.
+    Si se pasa un aglomerado, filtra por él. Si no, considera todos.
+    """
+    df = df.copy()
+    df['AGLOMERADO'] = df['AGLOMERADO'].astype(str).str.zfill(2)
+
+    if aglomerado:
+        df = df[df['AGLOMERADO'] == aglomerado]
+
+    # Filtramos solo ocupados y desocupados
+    df = df[df['CONDICION_LABORAL'].isin(['Ocupado dependiente', 'Ocupado autónomo', 'Desocupado'])]
+
+    # Creamos columna para el período
+    df['PERIODO'] = df['ANO4'].astype(str) + 'T' + df['TRIMESTRE'].astype(str)
+
+    # Clasificamos ocupados/desocupados
+    df['ESTADO'] = df['CONDICION_LABORAL'].apply(lambda x: 'ocupado' if 'Ocupado' in x else 'desocupado')
+
+    # Agrupamos por PERIODO y ESTADO, y sumamos ponderaciones
+    resumen = df.groupby(['PERIODO', 'ESTADO'])['PONDERA'].sum().unstack(fill_value=0)
+
+    # Calculamos la tasa de empleo
+    resumen['tasa_empleo'] = (resumen['ocupado'] / (resumen['ocupado'] + resumen['desocupado'])) * 100
+
+    return resumen['tasa_empleo'].round(2).sort_index().to_dict()
+
 def obtener_estadisticas_empleo(df, codigo_aglomerado):
     """Obtiene estadísticas de empleo para un aglomerado específico y devuelve el porcentaje de ocupados, etiquetas y tamaños para un gráfico de torta"""
     df = df.copy()
