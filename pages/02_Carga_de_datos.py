@@ -6,6 +6,7 @@ sys.path.append("..") # Acceso a src
 from src.dataset.generar_dataset import join_data
 from src.functions_streamlit.carga import obtener_periodos, verificar_correspondencia
 from src.utils.constants import DATA_OUT_PATH, DATA_PATH, PATHS
+from src.dataset.agregar_columnas import generar_columnas_csv_individual,generar_columnas_csv_hogar
 
 st.title("📁 Carga de datos")
 if not PATHS["hogar"]["json"].exists() or not PATHS["individual"]["json"].exists():
@@ -14,6 +15,10 @@ if not PATHS["hogar"]["json"].exists() or not PATHS["individual"]["json"].exists
         with st.spinner("Procesando datasets..."):
             # Llamada a la función para generar los archivos CSV
              join_data()
+             if not PATHS["hogar"]["csv"].exists():
+                 generar_columnas_csv_hogar()
+             if not PATHS["individual"]["csv"].exists():
+                 generar_columnas_csv_individual()
              st.success("✅ Dataset procesados correctamente.")
              st.rerun()
     st.stop()

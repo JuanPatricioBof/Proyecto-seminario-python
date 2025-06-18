@@ -147,33 +147,36 @@ def ano_y_trimestre_menor_desocupacion_PB_EJ3(path_procesado):
 
 def ranking_aglomerado_EJ4():
     """
-    Calcula y muestra el top 5 de aglomerados con mayor porcentaje de hogares
+    Calcula el top 5 de aglomerados con mayor porcentaje de hogares
     que tienen 2 o más integrantes con estudios universitarios completos (NIVEL_ED=6).
     
-    Args:
-        DATA_OUT_PATH (Path): Ruta donde se encuentran los archivos procesados
-                             'hogar_process.csv' e 'individual_process.csv'.
+    Returns:
+        List[Tuple[str, float]]: Lista de tuplas con (nombre_aglomerado, porcentaje)
+                                ordenada de mayor a menor porcentaje.
     """    
     try:
-        hogar_path= PATHS["hogar"]["csv"]
-        individual_path=PATHS["individual"]["csv"]
-        # 1. Obtener el período más reciente del JSON
+        hogar_path = PATHS["hogar"]["csv"]
+        individual_path = PATHS["individual"]["csv"]
+        
+        # 1. Obtener el período más reciente
         with open(PATHS["hogar"]["json"], 'r', encoding='utf-8') as f:
             periodos = json.load(f)
         
         ultimo_anio = max(periodos.keys())
         ultimo_trimestre = max(periodos[ultimo_anio])
-        # 1. Contar universitarios por hogar (CODUSU)
+        
+        # 1. Contar universitarios por hogar
         universitarios_por_hogar = defaultdict(int)
 
         with open(individual_path, newline='', encoding='utf-8') as f_ind:
             reader = csv.DictReader(f_ind, delimiter=';')
             for row in reader:
-                if row.get('ANO4') == ultimo_anio and row.get('TRIMESTRE') == ultimo_trimestre:
-                    codusu = row.get('CODUSU')
-                    nivel_ed = row.get('NIVEL_ED')
-                    if codusu and nivel_ed == '6':
-                        universitarios_por_hogar[codusu] += 1
+                if (row.get('ANO4') == ultimo_anio and 
+                    row.get('TRIMESTRE') == ultimo_trimestre):
+                    if row.get('NIVEL_ED') == '6':
+                        codusu = row.get('CODUSU')
+                        if codusu:
+                            universitarios_por_hogar[codusu] += 1
 
         # 2. Contar hogares por aglomerado
         total_hogares = defaultdict(int)
@@ -182,37 +185,43 @@ def ranking_aglomerado_EJ4():
         with open(hogar_path, newline='', encoding='utf-8') as f_hog:
             reader = csv.DictReader(f_hog, delimiter=';')
             for row in reader:
-                if row.get('ANO4') == ultimo_anio and row.get('TRIMESTRE') == ultimo_trimestre:
+                if (row.get('ANO4') == ultimo_anio and 
+                    row.get('TRIMESTRE') == ultimo_trimestre):
                     codusu = row.get('CODUSU')
                     aglomerado = row.get('AGLOMERADO')
 
-                    if not codusu or not aglomerado:
-                         continue  # saltear si falta info
+                    if codusu and aglomerado:
+                        total_hogares[aglomerado] += 1
+                        if universitarios_por_hogar.get(codusu, 0) >= 2:
+                            hogares_calificados[aglomerado] += 1
 
-                    total_hogares[aglomerado] += 1
-
-                    if universitarios_por_hogar.get(codusu, 0) >= 2:
-                         hogares_calificados[aglomerado] += 1
-
-        # 3. Calcular porcentajes
+        # 3. Calcular porcentajes y preparar estructura
         ranking = []
-        for aglo in total_hogares:
-            total = total_hogares[aglo]
+        for aglo, total in total_hogares.items():
             calificados = hogares_calificados.get(aglo, 0)
             porcentaje = (calificados / total) * 100 if total > 0 else 0
-            codigo_aglo = str(aglo).zfill(2)  # <- clave formateada
+            codigo_aglo = str(aglo).zfill(2)
             nombre_aglo = diccionario_aglomerados.get(codigo_aglo, f"Aglomerado {codigo_aglo}")
-            ranking.append((nombre_aglo, porcentaje))
+            ranking.append((nombre_aglo, round(porcentaje, 2)))  # Redondeamos a 2 decimales
 
-        # 4. Ordenar por porcentaje descendente y mostrar top 5
+        # 4. Ordenar y devolver top 5
         ranking.sort(key=lambda x: x[1], reverse=True)
-
-        print("Top 5 aglomerados con mayor porcentaje de hogares con ≥2 universitarios completos:\n")
-        for nombre_aglo, pct in ranking[:5]:
-            print(f"{nombre_aglo}: {pct:.2f}%")
+        return ranking[:5]
+        
     except Exception as e:
-        print(f"\nError: {str(e)}")
-            
+        print(f"\nError en ranking_aglomerado_EJ4: {str(e)}")
+        return []
+def imprimir_ranking_ej4():
+     resultados = ranking_aglomerado_EJ4()
+     print("═"*60)
+     print("TOP 5 AGLOMERADOS".center(60))
+     print("Mayor % de hogares con ≥2 universitarios completos".center(60))
+     print("═"*60)
+     print(f"{'Posición':<10}{'Aglomerado':<30}{'Porcentaje':>20}")
+     print("-"*60)
+     for i, (nombre, pct) in enumerate(resultados, 1):
+        print(f"{i:<10}{nombre:<30}{pct:>20.2f}%")
+        print("═"*60)
 
 def informar_aglomerados_porcentajes_5B(file_csv):
     """ 5. Informar para cada aglomerado el porcentaje de viviendas ocupadas por sus propietarios. """
