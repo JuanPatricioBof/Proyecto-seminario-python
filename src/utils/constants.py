@@ -9,11 +9,11 @@ DATA_OUT_PATH = PROJECT_PATH / "files" /"data_out" # Path to the "data_out" dire
 PATHS = {
     "individual": {
         "csv": DATA_OUT_PATH / "individual_process.csv",
-        "json": DATA_OUT_PATH / "estructura_individuos.json"
+        "json": DATA_OUT_PATH / "estructura_individual.json"
     },
     "hogar": {
         "csv": DATA_OUT_PATH / "hogar_process.csv",
-        "json": DATA_OUT_PATH / "estructura_hogares.json"
+        "json": DATA_OUT_PATH / "estructura_hogar.json"
     }
 }
 
