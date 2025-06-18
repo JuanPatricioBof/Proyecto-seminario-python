@@ -40,12 +40,12 @@ else:
    df_filtrado = df_viviendas
 
 # Inciso 1
-#total_encuestados = hogares_encuestados(df_filtrado['PONDERA'])
-#st.write(f' - Cantidad de hogares encuestados🏠: {total_encuestados}')
+total_encuestados = hogares_encuestados(df_filtrado['PONDERA'])
+st.write(f' - Cantidad de hogares encuestados🏠: {total_encuestados}')
 
 # Inciso 2
-#st.subheader('Distribución según tipos de hogar en Argentina')
-#mostrar_grafico_torta(df_filtrado,total_encuestados)
+st.subheader('Distribución según tipos de hogar en Argentina')
+mostrar_grafico_torta(df_filtrado,total_encuestados)
 
 # Inciso 3
 #informar_piso_dominante_por_aglomerado(df_filtrado)
