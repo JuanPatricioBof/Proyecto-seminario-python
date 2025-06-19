@@ -51,6 +51,7 @@ def cargar_json(path):
         fechas = json.load(f)
     return {int(k): [int(tri) for tri in v] for k, v in fechas.items()}
 
+
 def obtener_fechas_comunes(json_hogares, json_individuos):
     """
     Obtiene los años y trimestres que están presentes en ambos archivos JSON.
@@ -114,36 +115,9 @@ def cargar_fechas_correspondencia_en_session(forzar_actualizacion=False):
         if not fechas:
             st.warning("No se encontraron fechas comunes entre los datasets")
             
+
 def verificar_fechas_cargadas_en_session():
     if 'fechas_correspondencia' not in st.session_state:
         st.spinner("cargando correspondencia en session")
         cargar_fechas_correspondencia_en_session()    
-
-    
-# def file_exists(path):
-#     """Verifica que el archivo exista
-
-#     Args:
-#         path (path or str): ruta al archivo
-
-#     Returns:
-#         boolean: True si existe, false si no.
-#     """    
-#     return os.path.exists(path)
-
-
-# def cargar_datos_en_session():
-#     """Carga en session_state los dataframes y diccionario de fechas"""
-
-#     # Cargo DataFrames
-#     if "df_individuos" not in st.session_state:
-#         st.session_state.df_individuos = cargar_csv(PATHS["individual"]["csv"])
-#     if "df_hogares" not in st.session_state:
-#         st.session_state.df_hogares = cargar_csv(PATHS["hogar"]["csv"])
-    
-#     # Cargo Json de fechas disponibles
-#     if "fechas_individuos" not in st.session_state:
-#         st.session_state.fechas_individuos = cargar_json(PATHS["individual"]["json"])
-#     if "fechas_hogares" not in st.session_state:
-#         st.session_state.fechas_hogares = cargar_json(PATHS["hogar"]["json"])
 
