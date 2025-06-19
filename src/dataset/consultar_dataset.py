@@ -472,11 +472,12 @@ edad con secundario incompleto."""
                 salida += str (tabla[año][trimestre][aglo]['porcentaje'] ) + '%    '
             print(salida)
 
-
 def informar_aglomerados_punto11(path_procesado):
-    """ . Informar el aglomerado con mayor cantidad de viviendas con más de dos ocupantes
-y sin baño. Informar también la cantidad de ellas.
-"""
+    """
+    11. Pedir al usuario que seleccione un año, y busque en el último trimestre almacenado
+    del mencionado año, el aglomerado con mayor porcentaje de viviendas de “Material
+    precario” y el aglomerado con menor porcentaje de viviendas de “Material precario”.
+    """
     anio = input("Ingrese el año que desea consultar: ")
     if not anio.isdigit():
         print("Por favor, ingrese un año válido.")
@@ -493,9 +494,8 @@ y sin baño. Informar también la cantidad de ellas.
         print(f"No hay datos cargados para el año {anio}.")
         return
 
-    # Como los datos están ordenados por año y trimestre en forma descendente,
-    # el primer registro del año es del trimestre más reciente
-    ultimo_trimestre = int(datos[0]['TRIMESTRE'])
+    # Calcula el último trimestre disponible en los datos del año
+    ultimo_trimestre = max(int(row['TRIMESTRE']) for row in datos)
     datos_ultimo_trimestre = [
         row for row in datos if int(row['TRIMESTRE']) == ultimo_trimestre
     ]
@@ -505,7 +505,7 @@ y sin baño. Informar también la cantidad de ellas.
 
     for row in datos_ultimo_trimestre:
         aglomerado = row['AGLOMERADO']
-        tipo_material = row['material_techumbre'].strip().lower()
+        tipo_material = row['MATERIAL_TECHUMBRE'].strip().lower()
 
         try:
             pondera = int(row["PONDERA"])
@@ -517,7 +517,7 @@ y sin baño. Informar también la cantidad de ellas.
             viviendas_precarias[aglomerado] = 0
 
         viviendas_totales[aglomerado] += pondera
-        if tipo_material=='material precario':
+        if tipo_material == 'material precario':
             viviendas_precarias[aglomerado] += pondera
 
     porcentajes = {}
