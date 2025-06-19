@@ -50,6 +50,12 @@ if st.button("🔄 Forzar actualización del dataset"):
          join_data()
          if 'fechas_correspondencia' in st.session_state:
             del st.session_state.fechas_correspondencia
+
+        #  # --Borrar cache y activar flag de recarga
+        #  st.cache_data.clear()
+        #  st.session_state.recargar_datos = True
+        #  st.rerun()
+         
          cargar_fechas_correspondencia_en_session(forzar_actualizacion=True)
          st.success("✅ Dataset actualizado correctamente.")
 

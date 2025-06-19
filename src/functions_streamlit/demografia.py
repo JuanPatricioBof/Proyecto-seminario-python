@@ -6,7 +6,7 @@ from matplotlib.ticker import FuncFormatter
 from src.utils.constants import diccionario_aglomerados
 
 
-@st.cache_data
+#@st.cache_data
 def filtrar_individuos(df, año, trimestre, edad_min=0, edad_max=110):
     """Filtra el dataframe por año,trimestre, y se asegura que la edad sea valida
 
@@ -29,7 +29,7 @@ def filtrar_individuos(df, año, trimestre, edad_min=0, edad_max=110):
     return df[filtro]
 
 
-@st.cache_data
+#@st.cache_data
 def obtener_ultima_fecha(fechas):
     """Obtiene el año y trimestre mas reciente.
 
@@ -45,7 +45,7 @@ def obtener_ultima_fecha(fechas):
     return (max_anio,max_trim)
 
 
-@st.cache_data
+#@st.cache_data
 def agrupar_por_decada_y_genero(df):
     """Agrupa por década y genero. Genera este dataframe
     Retorna un DataFrame donde las filas son las décadas y las columnas son los géneros:
@@ -71,7 +71,7 @@ def agrupar_por_decada_y_genero(df):
     return agrupado
 
 
-@st.cache_data
+#@st.cache_data
 def agrupar_por_aglomerado(df):
     """Agrupa por código de aglomerado y calcula el promedio
     

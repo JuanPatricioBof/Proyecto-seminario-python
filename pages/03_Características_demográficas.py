@@ -1,10 +1,6 @@
 import sys
 sys.path.append("..") # Acceso a src
 import streamlit as st
-import pandas as pd
-import numpy as np
-
-#import matplotlib.pyplot as plt
 from src.utils.loader import cargar_parcial_csv, cargar_json
 from src.functions_streamlit.demografia import filtrar_individuos, agrupar_por_decada_y_genero, graficar_barras_dobles, obtener_ultima_fecha, agrupar_por_aglomerado, convertir_a_dataframe_formateado
 from src.utils.constants import PATHS
@@ -45,7 +41,16 @@ with col2:
     trim_selec = st.selectbox("Seleccioná un trimestre", fechas_ind[año_selec]) # Eligir trimestre disponible de ese año
 
 df_por_fecha = filtrar_individuos(df_ind, año_selec, trim_selec)
+
+# if df_por_fecha.empty:
+#     st.warning("No hay datos para el año y trimestre seleccionados.")
+#     st.stop()
+
 poblacion_por_decada_genero = agrupar_por_decada_y_genero(df_por_fecha)
+
+# if poblacion_por_decada_genero.empty:
+#     st.warning("No se pudo calcular la población por década y género.")
+#     st.stop()
 
 fig = graficar_barras_dobles(poblacion_por_decada_genero, año_selec, trim_selec, colores= ["#FFB6C1", "#6495ED"] )
 st.pyplot(fig)
@@ -60,11 +65,16 @@ df_ultima_fecha = filtrar_individuos(df_ind, ultima_fecha[0], ultima_fecha[1])
 
 promedios = agrupar_por_aglomerado(df_ultima_fecha)
 
+# if promedios.empty:
+#     st.warning("No se pudo calcular el promedio por aglomerado.")
+#     st.stop()
+
 df_promedios = convertir_a_dataframe_formateado(promedios)
 
 st.subheader("Promedio de edades por aglomerados.")
 
 st.markdown(f'Se muestra información de la EPH mas reciente AÑO {ultima_fecha[0]} T{ultima_fecha[1]}')
+
 
 # ----opcion para deslizar-----
 st.dataframe(df_promedios.reset_index(drop=True))

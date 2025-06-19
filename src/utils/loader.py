@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import json
 import os
-from src.utils.constants import DATA_OUT_PATH, PATHS
+from src.utils.constants import PATHS
 
 # -------------------------
 # FUNCIONES CON CACHE
