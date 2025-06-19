@@ -40,22 +40,18 @@ def verificar_correspondencia(json_hogares, json_individuos):
     """
     Verifica la correspondencia entre archivos JSON de hogares e individuos de la EPH.
     
-    Compara los años y trimestres registrados en los archivos JSON para detectar inconsistencias,
-    asegurando que cada registro en hogares.json tenga su correspondiente en individuos.json y viceversa.
-
     Parameters
     ----------
     json_hogares : str or Path
-        Ruta del archivo JSON que contiene los datos de hogares (formato: {año: [trimestres]})
+        Ruta del archivo JSON de hogares (formato: {año: [trimestres]})
     json_individuos : str or Path
-        Ruta del archivo JSON que contiene los datos de individuos (formato: {año: [trimestres]})
+        Ruta del archivo JSON de individuos (formato: {año: [trimestres]})
 
     Returns
     -------
-    list
-        Lista de mensajes con los faltantes detectados. Cada mensaje sigue el formato:
-        "En el archivo de [tipo], falta el trimestre: [X] del año: [Y]"
-        Retorna lista vacía si no hay inconsistencias.
+    list of tuples
+        Lista de tuplas con los años y trimestres faltantes en formato (año, trimestre, tipo)
+        donde tipo es 'hogares' o 'individuos' indicando dónde falta
     """
     faltantes = []
     
@@ -65,16 +61,20 @@ def verificar_correspondencia(json_hogares, json_individuos):
     with open(json_individuos, 'r') as f:
         datos_individuos = json.load(f)
 
-    # Verificar hogares -> individuos
+    # Verificar hogares -> individuos (faltantes en individuos)
     for año, trimestres in datos_hogares.items():
+        año_int = int(año)  # Convertir a entero por si el JSON tiene años como strings
         for trimestre in trimestres:
-            if año not in datos_individuos or trimestre not in datos_individuos[año]:
-                faltantes.append(f"En el archivo de individuos, falta el trimeste: {trimestre} del año: {año}")
+            trimestre_int = int(trimestre)  # Convertir a entero
+            if año not in datos_individuos or str(trimestre_int) not in datos_individuos[año]:
+                faltantes.append((año_int, trimestre_int, 'individuos'))
 
-    # Verificar individuos -> hogares
+    # Verificar individuos -> hogares (faltantes en hogares)
     for año, trimestres in datos_individuos.items():
+        año_int = int(año)
         for trimestre in trimestres:
-            if año not in datos_hogares or trimestre not in datos_hogares[año]:
-                faltantes.append(f"En el archivo de individuos, falta el trimeste: {trimestre} del año: {año}")
+            trimestre_int = int(trimestre)
+            if año not in datos_hogares or str(trimestre_int) not in datos_hogares[año]:
+                faltantes.append((año_int, trimestre_int, 'hogares'))
 
     return faltantes

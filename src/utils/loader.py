@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import json
 import os
-from src.utils.constants import DATA_OUT_PATH, PATHS
+from src.utils.constants import PATHS
 
 # -------------------------
 # FUNCIONES CON CACHE
@@ -52,29 +52,72 @@ def cargar_json(path):
     return {int(k): [int(tri) for tri in v] for k, v in fechas.items()}
 
 
-# def file_exists(path):
-#     """Verifica que el archivo exista
+def obtener_fechas_comunes(json_hogares, json_individuos):
+    """
+    Obtiene los años y trimestres que están presentes en ambos archivos JSON.
 
-#     Args:
-#         path (path or str): ruta al archivo
+    Parameters
+    ----------
+    json_hogares : str or Path
+        Ruta al archivo JSON de hogares (formato: {año: [trimestres]})
+    json_individuos : str or Path
+        Ruta al archivo JSON de individuos (formato: {año: [trimestres]})
 
-#     Returns:
-#         boolean: True si existe, false si no.
-#     """    
-#     return os.path.exists(path)
+    Returns
+    -------
+    list of tuples
+        Lista de tuplas con los años y trimestres comunes en formato (año, trimestre)
+    """
+    # Cargar los datos
+    try:
+        with open(json_hogares, 'r') as f:
+            hogares = {int(año): [int(t) for t in trimestres] 
+                    for año, trimestres in json.load(f).items()}
+        
+        with open(json_individuos, 'r') as f:
+            individuos = {int(año): [int(t) for t in trimestres] 
+                        for año, trimestres in json.load(f).items()}
 
-
-# def cargar_datos_en_session():
-#     """Carga en session_state los dataframes y diccionario de fechas"""
-
-#     # Cargo DataFrames
-#     if "df_individuos" not in st.session_state:
-#         st.session_state.df_individuos = cargar_csv(PATHS["individual"]["csv"])
-#     if "df_hogares" not in st.session_state:
-#         st.session_state.df_hogares = cargar_csv(PATHS["hogar"]["csv"])
+        # Encontrar coincidencias
+        fechas_comunes = []
+        
+        # Buscar años comunes
+        años_comunes = set(hogares.keys()) & set(individuos.keys())
+        
+        for año in años_comunes:
+            # Buscar trimestres comunes para cada año
+            trimestres_comunes = set(hogares[año]) & set(individuos[año])
+            for trimestre in trimestres_comunes:
+                fechas_comunes.append((año, trimestre))
+        return fechas_comunes
+    except FileNotFoundError as e:
+        print(f"Error: Archivo no encontrado - {str(e)}")
+       
+    except json.JSONDecodeError as e:
+        print(f"Error: Archivo JSON inválido - {str(e)}")
+        
+    except ValueError as e:
+        print(f"Error: Valor incorrecto en los datos - {str(e)}")
+        
+    except Exception as e:
+        print(f"Error inesperado: {str(e)}")
     
-#     # Cargo Json de fechas disponibles
-#     if "fechas_individuos" not in st.session_state:
-#         st.session_state.fechas_individuos = cargar_json(PATHS["individual"]["json"])
-#     if "fechas_hogares" not in st.session_state:
-#         st.session_state.fechas_hogares = cargar_json(PATHS["hogar"]["json"])
+    
+
+def cargar_fechas_correspondencia_en_session(forzar_actualizacion=False):
+    """Carga las fechas comunes en session_state"""
+    if forzar_actualizacion or 'fechas_correspondencia' not in st.session_state:
+        fechas = obtener_fechas_comunes(
+            PATHS["hogar"]["json"], 
+            PATHS["individual"]["json"]
+        )
+        st.session_state.fechas_correspondencia = fechas
+        if not fechas:
+            st.warning("No se encontraron fechas comunes entre los datasets")
+            
+
+def verificar_fechas_cargadas_en_session():
+    if 'fechas_correspondencia' not in st.session_state:
+        st.spinner("cargando correspondencia en session")
+        cargar_fechas_correspondencia_en_session()    
+
