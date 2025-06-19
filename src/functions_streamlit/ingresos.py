@@ -23,9 +23,9 @@ def procesar_canasta(df_canasta):
     df_canasta['MES']=df_canasta['indice_tiempo'].dt.month
     df_canasta['TRIMESTRE'] = df_canasta['MES'].apply(calcular_trimestre)
     
-    #Asignamos CBT y CBI  a partir de las columnas del csv de canasta basica
-    df_canasta['CBT'] = df_canasta['canasta_basica_total']
-    df_canasta['CBI'] = df_canasta['canasta_basica_alimentaria']
+    #Asignamos CBT(canasta basica total)para calcular la pobreza y CBI(canasta basica indigencia)  a partir de las columnas del csv de canasta basica
+    df_canasta['CBT'] = df_canasta['linea_pobreza']
+    df_canasta['CBI'] = df_canasta['linea_indigencia']
 
     #Calculamos el promedio trimestral
     canasta_promedio = df_canasta.groupby(['ANIO', 'TRIMESTRE'], ).agg({

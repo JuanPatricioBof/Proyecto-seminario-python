@@ -3,14 +3,15 @@ import os
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 
 # Agrega "code/src" al sys.path
 sys.path.append('..')
 
 from src.utils.constants import PATHS, diccionario_aglomerados
 from src.utils.loader import cargar_parcial_csv, cargar_json
-from src.functions_streamlit.vivienda import hogares_encuestados
-from src.functions_streamlit.vivienda import mostrar_grafico_torta
+from src.functions_streamlit.vivienda import hogares_encuestados, mostrar_banios_por_aglomerado, evolucion_regimen
+from src.functions_streamlit.vivienda import mostrar_grafico_torta, informar_piso_dominante_por_aglomerado
 from src.functions_streamlit.vivienda import viviendas_en_villa_por_aglomerado, porcentaje_viviendas_por_condicion
 
 
@@ -33,26 +34,39 @@ st.title("Características de la vivienda.")
 
 # filtrado (modularizar?)
 
-op = st.selectbox("Elegir año",opciones,index=len(opciones)-1,key='anio_p3')
+op = st.selectbox("Elegir año",opciones,index=len(opciones)-1)
 if(op != 'Mostrar para todos los años'):
     df_filtrado = df_viviendas[df_viviendas['ANO4']==op]
 else:
    df_filtrado = df_viviendas
 
 # Inciso 1
-total_encuestados = hogares_encuestados(df_filtrado['PONDERA'])
-st.write(f' - Cantidad de hogares encuestados🏠: {total_encuestados}')
+total_encuestados = hogares_encuestados(df_filtrado)
+st.write(f' - Cantidad de hogares encuestados🏠: {total_encuestados:,}')
 
 # Inciso 2
-st.subheader('Distribución según tipos de hogar en Argentina')
+st.subheader('Distribución de tipos de hogar en Argentina')
 mostrar_grafico_torta(df_filtrado,total_encuestados)
 
 # Inciso 3
-#informar_piso_dominante_por_aglomerado(df_filtrado)
+with st.expander('Piso predominante en el interior de las viviendas por aglomerado',icon='📍'):
+    informar_piso_dominante_por_aglomerado(df_filtrado)
 
 # Inciso 4
+mostrar_banios_por_aglomerado(df_filtrado)
 
 # Inciso 5
+
+st.subheader('Evolución de régimen de tenencia')
+
+
+aglomerado_elegido = st.selectbox(
+    'Elija un aglomerado para ver su evoolución de régimen de tenencias',
+    options=diccionario_aglomerados.values() # mejorar
+)
+
+evolucion_regimen(aglomerado_elegido,df_filtrado)
+
 
 #Inciso 6
 st.subheader("1.4.6 cantidad de viviendas ubicadas en villa de emergencia por aglomerado")
