@@ -57,8 +57,8 @@ def crear_grafico_barras(conteo, año):
      plt.tight_layout()
      return plt
  # -------------------- 1.6.2 --------------------
-# Constante global para reutilizar en otras funciones
 # Mapeo de niveles educativos (con nombre y orden)
+
 NIVEL_EDUCATIVO_MAP = {
     1: "Primario Incompleto",
     2: "Primario Completo",
