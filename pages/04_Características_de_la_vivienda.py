@@ -69,7 +69,7 @@ evolucion_regimen(aglomerado_elegido,df_filtrado)
 
 
 #Inciso 6
-st.subheader("1.4.6 cantidad de viviendas ubicadas en villa de emergencia por aglomerado")
+st.subheader("Cantidad de viviendas ubicadas en villa de emergencia por aglomerado")
 resumen = viviendas_en_villa_por_aglomerado(df_filtrado, diccionario_aglomerados)
 st.dataframe(
     resumen.style.format({
@@ -80,15 +80,11 @@ st.dataframe(
     height=min(500, 35 * len(resumen) + 35)
 )
 #Inciso 7
-tabla_resultado = porcentaje_viviendas_por_condicion(df_viviendas, diccionario_aglomerados, op)
+st.subheader("Porcentaje de vivendas para cada condicion de habitabilidad")
+tabla_resultado = porcentaje_viviendas_por_condicion(df_filtrado, diccionario_aglomerados)
 
 st.dataframe(tabla_resultado, use_container_width=True)
 
 # Exportar CSV
 csv = tabla_resultado.to_csv(index=False).encode('utf-8')
-st.download_button(
-    label="📥 Descargar CSV",
-    data=csv,
-    file_name=f"porcentaje_viviendas_condicion_{op}.csv",
-    mime="text/csv"
-)
+st.download_button(label="📥 Descargar CSV",data=csv,file_name=f"porcentaje_viviendas_condicion_{op}.csv",mime="text/csv")
