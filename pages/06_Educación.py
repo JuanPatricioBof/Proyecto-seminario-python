@@ -2,7 +2,7 @@
 import streamlit as st
 import pandas as pd
 from src.utils.constants import DATA_OUT_PATH, PATHS,diccionario_aglomerados
-from src.functions_streamlit.educacion import  procesar_niveles_educativos, crear_grafico_barras, INTERVALOS,obtener_nivel_mas_comun_ordinal,graficar_nivel_mas_comun_ordinal,ranking_aglomerado_EJ4
+from src.functions_streamlit.educacion import  *
 from src.utils.loader import cargar_parcial_csv, cargar_json,verificar_fechas_cargadas_en_session
 
 # Configuración inicial
@@ -81,3 +81,7 @@ st.dataframe(df_ranking)
 
 csv = df_ranking.to_csv(index=False).encode("utf-8")
 st.download_button("📥 Descargar CSV", data=csv, file_name="ranking_aglomerado.csv", mime="text/csv")
+# -------------------- 1.6.4 --------------------
+df_alfabetismo = porcentaje_alfabetismo_por_anio(df_ind)
+st.dataframe(df_alfabetismo)
+

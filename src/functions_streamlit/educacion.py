@@ -218,3 +218,38 @@ def ranking_aglomerado_EJ4(df_ind: pd.DataFrame, df_hog: pd.DataFrame, diccionar
     except Exception as e:
         print(f"\nError en ranking_aglomerado_EJ4: {str(e)}")
         return []
+    
+# -------------------- 1.6.4 --------------------
+def porcentaje_alfabetismo_por_anio(df_ind: pd.DataFrame) -> pd.DataFrame:
+    """
+    Calcula el porcentaje de personas mayores a 6 años que saben o no leer y escribir,
+    año por año.
+
+    Args:
+        df_ind (pd.DataFrame): DataFrame de individuos con columnas ANO4, CH06, CH09.
+
+    Returns:
+        pd.DataFrame: Con columnas [Año, Sabe Leer y Escribir, No Sabe Leer y Escribir]
+                      con porcentajes por año.
+    """
+    # Filtrar personas mayores a 6 años y CH09 válido (1 o 2)
+    df_filtrado = df_ind[(df_ind["CH06"] > 6) & (df_ind["CH09"].isin([1, 2]))]
+
+    # Agrupar por año y CH09 (1=sí, 2=no), contar
+    conteo = df_filtrado.groupby(["ANO4", "CH09"]).size().unstack(fill_value=0)
+
+    # Calcular totales por año
+    conteo["Total"] = conteo[1] + conteo[2]
+
+    # Calcular porcentajes
+    conteo["% Sabe Leer y Escribir"] = (conteo[1] / conteo["Total"]) * 100
+    conteo["% No Sabe Leer y Escribir"] = (conteo[2] / conteo["Total"]) * 100
+
+    # Devolver DataFrame final
+    resultado = conteo[["% Sabe Leer y Escribir", "% No Sabe Leer y Escribir"]].reset_index()
+    resultado["% Sabe Leer y Escribir"] = resultado["% Sabe Leer y Escribir"].round(2)
+    resultado["% No Sabe Leer y Escribir"] = resultado["% No Sabe Leer y Escribir"].round(2)
+    resultado.rename(columns={"ANO4": "Año"}, inplace=True)
+    resultado.set_index("Año", inplace=True)
+
+    return resultado
