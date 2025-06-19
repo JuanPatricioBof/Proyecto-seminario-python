@@ -3,7 +3,7 @@ sys.path.append("..") # Acceso a src
 import streamlit as st
 from src.utils.loader import cargar_parcial_csv, cargar_json
 from src.functions_streamlit.demografia import filtrar_individuos, agrupar_por_decada_y_genero, graficar_barras_dobles, obtener_ultima_fecha, agrupar_por_aglomerado, convertir_a_dataframe_formateado
-from src.utils.constants import PATHS
+from src.utils.constants import PATHS, diccionario_aglomerados
 
 
 # --- Configuración de la página ---
@@ -80,3 +80,29 @@ st.markdown(f'Se muestra información de la EPH mas reciente AÑO {ultima_fecha[
 st.dataframe(df_promedios.reset_index(drop=True))
 # ---- opcion estatica------
 #st.table(df_promedios.set_index("Aglomerado")) # muestra tabla sin indice
+
+
+st.divider()
+
+st.subheader("Evolución de la dependencia demográfica para cada año y trimestre.")
+
+if "aglo_seleccionado" not in st.session_state:
+    st.session_state.aglo_seleccionado = "Seleccionar..."
+
+# Obtiene los cod de aglomerados disponibles formateados '02' para poder accederlo 
+cod_aglos = sorted(df_ind['AGLOMERADO'].dropna().astype(int).astype(str).str.zfill(2).unique().tolist())
+opciones_aglos = ["Seleccionar..."] + cod_aglos # Agregamos una opción inicial
+
+select_aglo = st.selectbox(
+    "Seleccione un aglomerado", 
+    opciones_aglos,
+    index=opciones_aglos.index(st.session_state.aglo_seleccionado),
+    format_func=lambda cod: diccionario_aglomerados.get(cod, f"Aglomerado {cod}") if cod != "Seleccionar..." else cod,
+)
+# Actualizás el valor si cambió
+if select_aglo != st.session_state.aglo_seleccionado:
+    st.session_state.aglo_seleccionado = select_aglo
+
+if st.session_state.aglo_seleccionado != "Seleccionar...":
+    st.write("Seleccionó: ",diccionario_aglomerados.get(st.session_state.aglo_seleccionado))
+
