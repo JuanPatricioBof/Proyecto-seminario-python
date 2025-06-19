@@ -1,11 +1,6 @@
 """Pagina 06. Funciones educativas"""
 import pandas as pd
 import matplotlib.pyplot as plt
-from matplotlib.ticker import FuncFormatter
-from pathlib import Path
-import json
-from src.dataset.consultar_dataset import ranking_aglomerado_EJ4
-import numpy as np
 # -------------------- 1.6.1 --------------------
 def procesar_niveles_educativos(df, año_seleccionado):
     """Procesa los datos educativos y devuelve un DataFrame con conteos ponderados"""

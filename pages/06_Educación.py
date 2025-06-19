@@ -20,33 +20,30 @@ fechas_comunes=st.session_state.fechas_correspondencia
 
 
 # -------------------- 1.6.1 --------------------
-#  Sidebar con filtros
-with st.sidebar:
-    st.header("Filtros")
-    
-    # Cargamos los años disponibles
-    años_disponibles = sorted(list({año for año, trim in fechas_comunes}), reverse=True)
-    
-    if not años_disponibles:
-        st.warning("No se pudieron cargar los periodos disponibles")
-    else:
-        # Selector de año
-        año_seleccionado = st.selectbox(
-            "Seleccione el año",
-            options=años_disponibles,
-            index=0  # Selecciona el año más reciente por defecto
-        )
 
-#  Procesamiento de datos
-conteo_educativo = procesar_niveles_educativos(df_ind, año_seleccionado)
+# Selector de año
+años_disponibles = sorted(list({año for año, trim in fechas_comunes}), reverse=True)
 
-#  Visualización
-st.subheader("Distribución Educativa Detallada")
-# Crear el gráfico
-fig = crear_grafico_barras(conteo_educativo, año_seleccionado)
+if not años_disponibles:
+    st.warning("No se pudieron cargar los periodos disponibles")
+else:
+    # Selector de año 
+    año_seleccionado = st.selectbox(
+        "Seleccione el año",
+        options=años_disponibles,
+        index=0  # Selecciona el año más reciente por defecto
+    )
 
-# Mostrar en Streamlit
-st.pyplot(fig)
+    # Procesamiento de datos
+    conteo_educativo = procesar_niveles_educativos(df_ind, año_seleccionado)
+
+    # Visualización
+    st.subheader("Distribución Educativa Detallada")
+    # Crear el gráfico
+    fig = crear_grafico_barras(conteo_educativo, año_seleccionado)
+
+    # Mostrar en Streamlit
+    st.pyplot(fig)
 
 # -------------------- 1.6.2 --------------------
 
@@ -82,6 +79,7 @@ st.dataframe(df_ranking)
 csv = df_ranking.to_csv(index=False).encode("utf-8")
 st.download_button("📥 Descargar CSV", data=csv, file_name="ranking_aglomerado.csv", mime="text/csv")
 # -------------------- 1.6.4 --------------------
+st.subheader("📊 Porcentaje de la poblacion alfabetizada")
 df_alfabetismo = porcentaje_alfabetismo_por_anio(df_ind)
 st.dataframe(df_alfabetismo)
 
