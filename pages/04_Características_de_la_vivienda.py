@@ -23,7 +23,7 @@ opciones = [anio for anio in json_fechas]
 opciones.append('Mostrar para todos los años')
 
 # Interfaz 
-st.title("Características de la vivienda.")
+st.title("🪴Características de la vivienda.")
 
 # filtrado del dataframe
 op = st.selectbox("Años disponibles",opciones,index=len(opciones)-1)
@@ -35,7 +35,7 @@ if(op):
 hogares_encuestados(df_filtrado)
 
 # Inciso 2 : Mostrar porcentaje de tipos de vivienda
-st.subheader('Distribución de tipos de vivienda en Argentina')
+st.subheader('🥧Distribución de tipos de vivienda en Argentina')
 mostrar_grafico_torta(df_filtrado)
 
 # Inciso 3 : Mostrar piso interior predominante por aglomerado
