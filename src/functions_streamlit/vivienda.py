@@ -284,55 +284,27 @@ def evolucion_regimen(aglomerado_elegido,df_filtrado):
     else:
         st.warning('Seleccione al menos una variable para mostrar el gráfico.')
         
-    def viviendas_en_villa_por_aglomerado(df, diccionario_aglomerados):
-        """
-        Devuelve cantidad y porcentaje de viviendas en villa por aglomerado (nombre),
-        ordenado de forma decreciente por cantidad.
-        """
-        df = df[df['IV12_3'].isin([1, 2])].copy()
-
-        total_por_aglo = df.groupby('AGLOMERADO').size()
-        en_villa = df[df['IV12_3'] == 1].groupby('AGLOMERADO').size()
-
-        resumen = pd.DataFrame({
-            'Cantidad': en_villa,
-            'Total': total_por_aglo
-        }).fillna(0)
-
-        resumen['Cantidad'] = resumen['Cantidad'].astype(int)
-        resumen['Porcentaje'] = (resumen['Cantidad'] / resumen['Total'] * 100).round(2)
-
-        # Agregar nombre del aglomerado
-        resumen = resumen.reset_index()
-        resumen['AGLOMERADO'] = resumen['AGLOMERADO'].astype(str).str.zfill(2)
-        resumen['Aglomerado'] = resumen['AGLOMERADO'].map(diccionario_aglomerados)
-
-        # Reordenar columnas y ordenar
-        resumen = resumen[['Aglomerado', 'Cantidad', 'Porcentaje']]
-        return resumen.sort_values(by='Cantidad', ascending=False)
-
 
 def viviendas_en_villa_por_aglomerado(df, diccionario_aglomerados):
     """
     Devuelve cantidad y porcentaje de viviendas en villa por aglomerado (nombre),
     ordenado de forma decreciente por cantidad.
     """
-    df = df[df['IV12_3'].isin([1, 2])].copy()
+    df = df.copy()
+    df['AGLOMERADO'] = df['AGLOMERADO'].astype(str).str.zfill(2)
+    
+    #Total de viviendas por aglomerado
+    total_por_aglo = df.groupby('AGLOMERADO')['PONDERA'].sum()
+    
+    en_villa = df[df['IV12_3'] == 1].groupby('AGLOMERADO')['PONDERA'].sum()
+      
+    #Se une todo en un DataFrame
+    resumen = pd.DataFrame({'Cantidad': en_villa,'Total': total_por_aglo}).fillna(0)
 
-    total_por_aglo = df.groupby('AGLOMERADO').size()
-    en_villa = df[df['IV12_3'] == 1].groupby('AGLOMERADO').size()
-
-    resumen = pd.DataFrame({
-        'Cantidad': en_villa,
-        'Total': total_por_aglo
-    }).fillna(0)
-
-    resumen['Cantidad'] = resumen['Cantidad'].astype(int)
     resumen['Porcentaje'] = (resumen['Cantidad'] / resumen['Total'] * 100).round(2)
 
     # Agregar nombre del aglomerado
     resumen = resumen.reset_index()
-    resumen['AGLOMERADO'] = resumen['AGLOMERADO'].astype(str).str.zfill(2)
     resumen['Aglomerado'] = resumen['AGLOMERADO'].map(diccionario_aglomerados)
 
     # Reordenar columnas y ordenar
@@ -341,18 +313,26 @@ def viviendas_en_villa_por_aglomerado(df, diccionario_aglomerados):
 
 
 def porcentaje_viviendas_por_condicion(df, diccionario_aglomerados):
+    """ para cada aglomerado el porcentaje de
+    viviendas por CONDICION_DE_HABITABILIDAD
+    Args:
+        df (pd.DataFrame): DataFrame con datos filtrados de viviendas
+        diccionario_aglomerados (dicr): diccionario de aglomerados
+    Returns:
+        pd.DataFrame: DataFrame con una fila por aglomerado y una columna para cada condición de habitabilidad,
+       con los porcentajes correspondientes.
+      """
     df = df.copy()
     df['AGLOMERADO'] = df['AGLOMERADO'].astype(str).str.zfill(2)
 
-
     # Agrupamos por aglomerado y condición de habitabilidad
-    tabla = df.groupby(['AGLOMERADO', 'CONDICION_DE_HABITABILIDAD']).size().unstack(fill_value=0)
+    tabla = df.groupby(['AGLOMERADO', 'CONDICION_DE_HABITABILIDAD'])['PONDERA'].sum().unstack(fill_value=0)
 
     # Calculamos totales por aglomerado
     tabla['TOTAL'] = tabla.sum(axis=1)
 
     # Calculamos porcentajes por cada condición
-    for col in tabla.columns[:-1]:  # omitimos TOTAL
+    for col in tabla.columns[:-1]:  # omitimos la columna TOTAL
         tabla[col] = (tabla[col] / tabla['TOTAL'] * 100).round(2)
 
     tabla = tabla.drop(columns='TOTAL').reset_index()

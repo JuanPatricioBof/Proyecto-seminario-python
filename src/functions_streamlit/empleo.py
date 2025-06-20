@@ -10,10 +10,15 @@ def format_number(x):
         return f"{x:,.0f}".replace(",", ".") if x == int(x) else f"{x:,.1f}".replace(",", ".")
     return x
 
-def evolucion_desempleo(df, fechas_disponibles, aglomerado=None):
+def evolucion_desempleo(df, aglomerado=None):
     """
-    Devuelve la tasa de desempleo por período (anio + trimestre), usando pandas de forma eficiente.
-    Si se pasa un aglomerado, filtra por él. Si no, considera todos.
+    Calcula la evolución de la tasa de desempleo por período (año + trimestre), con opción de filtrar por aglomerado.
+    Args:
+        df (pd.DataFrame): DataFrame con datos individuales, incluyendo las columnas 'CONDICION_LABORAL', 
+                           'PONDERA', 'ANO4', 'TRIMESTRE' y 'AGLOMERADO'.
+        aglomerado (str, optional): Código del aglomerado. Si no se especifica, se calcula para todo el país.
+    Returns:
+        dict: Diccionario con las tasas de desempleo por período (clave = 'YYYYTn', valor = tasa en float).
     """
     df = df.copy()
     df['AGLOMERADO'] = df['AGLOMERADO'].astype(str).str.zfill(2)
@@ -39,10 +44,15 @@ def evolucion_desempleo(df, fechas_disponibles, aglomerado=None):
     return resumen['tasa_desempleo'].round(2).sort_index().to_dict()
 
 
-def evolucion_empleo(df, fechas_disponibles, aglomerado=None):
+def evolucion_empleo(df, aglomerado=None):
     """
-    Devuelve la tasa de empleo por período (anio + trimestre), usando pandas de forma eficiente.
-    Si se pasa un aglomerado, filtra por él. Si no, considera todos.
+    Calcula la evolución de la tasa de empleo por período, con opción de filtrar por aglomerado.
+    Args:
+        df (pd.DataFrame): DataFrame con datos individuales, incluyendo las columnas 'CONDICION_LABORAL', 
+                           'PONDERA', 'ANO4', 'TRIMESTRE' y 'AGLOMERADO'.
+        aglomerado (str, optional): Código del aglomerado. Si no se especifica, se calcula para todo el país.
+    Returns:
+        dict: Diccionario con las tasas de empleo por período (clave = 'YYYYTn', valor = tasa en float).
     """
     df = df.copy()
     df['AGLOMERADO'] = df['AGLOMERADO'].astype(str).str.zfill(2)

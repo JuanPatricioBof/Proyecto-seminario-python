@@ -73,7 +73,7 @@ st.subheader("Evolución de la tasa de desempleo")
 nombre = st.selectbox("Filtrar por aglomerado (opcional)", ["Todo el pais"] + list(diccionario_aglomerados.values()))
 codigo_aglo = next((k for k, v in diccionario_aglomerados.items() if v == nombre), None) if nombre else None
 
-tasas = evolucion_desempleo(df, fechas_disponibles, aglomerado=codigo_aglo)
+tasas = evolucion_desempleo(df, aglomerado=codigo_aglo)
 
 if tasas:
     st.line_chart(pd.Series(tasas))
@@ -84,9 +84,9 @@ else:
 st.subheader("Evolución de la tasa de empleo")
 
 nombre = st.selectbox("Filtrar por aglomerado (opcional)", ["Todo el país"] + list(diccionario_aglomerados.values()))
-codigo_aglo = next((k for k, v in diccionario_aglomerados.items() if v == nombre), None) if nombre != "Todo el país" else None
+codigo_aglo = next((k for k, v in diccionario_aglomerados.items() if v == nombre), None) if nombre else None
 
-tasas = evolucion_empleo(df, fechas_disponibles, aglomerado=codigo_aglo)
+tasas = evolucion_empleo(df, aglomerado=codigo_aglo)
 
 if tasas:
     st.line_chart(pd.Series(tasas))

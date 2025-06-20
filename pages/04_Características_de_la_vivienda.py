@@ -40,22 +40,22 @@ if(op != 'Mostrar para todos los años'):
 else:
    df_filtrado = df_viviendas
 
-# Inciso 1
+# -------------------- 1.4.1 --------------------
 total_encuestados = hogares_encuestados(df_filtrado)
 st.write(f' - Cantidad de hogares encuestados🏠: {total_encuestados:,}')
 
-# Inciso 2
+# -------------------- 1.4.2 --------------------
 st.subheader('Distribución de tipos de hogar en Argentina')
 mostrar_grafico_torta(df_filtrado,total_encuestados)
 
-# Inciso 3
+# -------------------- 1.4.3 --------------------
 with st.expander('Piso predominante en el interior de las viviendas por aglomerado',icon='📍'):
     informar_piso_dominante_por_aglomerado(df_filtrado)
 
-# Inciso 4
+# -------------------- 1.4.4 --------------------
 mostrar_banios_por_aglomerado(df_filtrado)
 
-# Inciso 5
+# -------------------- 1.4.5 --------------------
 
 st.subheader('Evolución de régimen de tenencia')
 
@@ -68,7 +68,7 @@ aglomerado_elegido = st.selectbox(
 evolucion_regimen(aglomerado_elegido,df_filtrado)
 
 
-#Inciso 6
+# -------------------- 1.4.6 --------------------
 st.subheader("Cantidad de viviendas ubicadas en villa de emergencia por aglomerado")
 resumen = viviendas_en_villa_por_aglomerado(df_filtrado, diccionario_aglomerados)
 st.dataframe(
@@ -79,7 +79,7 @@ st.dataframe(
     use_container_width=True,
     height=min(500, 35 * len(resumen) + 35)
 )
-#Inciso 7
+# -------------------- 1.4.7 --------------------
 st.subheader("Porcentaje de vivendas para cada condicion de habitabilidad")
 tabla_resultado = porcentaje_viviendas_por_condicion(df_filtrado, diccionario_aglomerados)
 
