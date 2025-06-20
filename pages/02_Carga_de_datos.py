@@ -1,6 +1,5 @@
 import streamlit as st
-import sys
-sys.path.append("..") # Acceso a src
+
 
 # Importar la función y las constantes
 from src.dataset.generar_dataset import join_data
