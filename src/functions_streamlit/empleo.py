@@ -4,7 +4,6 @@ import json
 import streamlit as st
 
 
-
 def format_number(x):
     if isinstance(x, (int, float)):
         return f"{x:,.0f}".replace(",", ".") if x == int(x) else f"{x:,.1f}".replace(",", ".")

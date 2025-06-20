@@ -23,8 +23,16 @@ def generar_columnas_csv_individual():
             writer.writeheader()
             
             for fila in reader:
+
                 # CH04: sexo
                 fila['CH04_str'] = 'Masculino' if fila['CH04'] == '1' else 'Femenino'
+                
+                if fila['CH04'] == '1':
+                    fila['CH04_str'] = 'Masculino'
+                elif fila['CH04'] == '2':
+                    fila['CH04_str'] = 'Femenino'
+                else:
+                    fila['CH04_str'] = 'Masculino' # Si tiene otro dato lo seteo como masculino
 
                 # NIVEL_ED: nivel educativo
                 match fila['NIVEL_ED']:
