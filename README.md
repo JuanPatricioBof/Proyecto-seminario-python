@@ -83,3 +83,19 @@ Los códigos de cada notebook deben ejecutarse en orden, porque algunas seccione
 ### ✅ Para ver la página web ejecutamos en la terminal
 
 `streamlit run EncuestAR.py`
+
+### 📄 En EncuestAR.py
+
+### 🟢 Página de bienvenida
+
+La aplicación inicia con una pantalla de bienvenida.
+
+### 📂 Página 2 – Carga de datos
+Con los datos del trimestre colocados en la carpeta data_eph, se puede iniciar el procesamiento:
+
+Presionar “Procesar dataset…” para generar los 4 archivos CSV y los 2 archivos JSON necesarios.
+
+Si ya existen archivos procesados pero se han agregado nuevos archivos al directorio data_eph, se recomienda presionar “Forzar actualización del dataset” para regenerar todos los datos y asegurarse de que estén actualizados
+
+### 🧭 Navegación
+Una vez procesados los datos, se puede navegar entre las distintas páginas de análisis desde la barra lateral izquierda de Streamlit.

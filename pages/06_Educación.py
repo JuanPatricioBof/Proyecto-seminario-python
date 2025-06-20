@@ -1,4 +1,6 @@
 # app.py
+import sys
+sys.path.append("..") # Acceso a src
 import streamlit as st
 import pandas as pd
 from src.utils.constants import DATA_OUT_PATH, PATHS,diccionario_aglomerados

@@ -3,7 +3,17 @@ import pandas as pd
 import matplotlib.pyplot as plt
 # -------------------- 1.6.1 --------------------
 def procesar_niveles_educativos(df, año_seleccionado):
-    """Procesa los datos educativos y devuelve un DataFrame con conteos ponderados"""
+    """
+    Devuelve la cantidad de personas por nivel educativo para un año dado, usando ponderación.
+
+    Args:
+        df (pd.DataFrame): DataFrame con datos individuales.
+        año_seleccionado (int): Año a filtrar.
+
+    Returns:
+        pd.DataFrame: Niveles educativos y cantidad ponderada de personas, ordenado de mayor a menor.
+    """
+    df=df.copy()
     df["NIVEL_ED_TEXTO"] = df["NIVEL_ED"].map(NIVEL_EDUCATIVO_MAP)
     df_año = df[df["ANO4"] == año_seleccionado]
     conteo = df_año.groupby("NIVEL_ED_TEXTO")["PONDERA"].sum().reset_index()
@@ -12,7 +22,7 @@ def procesar_niveles_educativos(df, año_seleccionado):
     return conteo.sort_values("Cantidad Ponderada", ascending=False)
 
 def crear_grafico_barras(conteo, año):
-     """Crea y devuelve un gráfico de barras estilizado con solo Matplotlib"""
+     """Crea y devuelve un gráfico de barras estilizado con Matplotlib"""
 
      colores = plt.cm.Paired.colors[:len(conteo)]
 
@@ -57,8 +67,8 @@ def crear_grafico_barras(conteo, año):
      plt.tight_layout()
      return plt
  # -------------------- 1.6.2 --------------------
-# Constante global para reutilizar en otras funciones
 # Mapeo de niveles educativos (con nombre y orden)
+
 NIVEL_EDUCATIVO_MAP = {
     1: "Primario Incompleto",
     2: "Primario Completo",
@@ -87,33 +97,71 @@ def asignar_intervalo(edad):
 
 
 def obtener_nivel_mas_comun_ordinal(df, intervalos_seleccionados):
-    df = df.copy()
-    df["Intervalo"] = df["CH06"].apply(asignar_intervalo)
-    df = df[df["Intervalo"].isin(intervalos_seleccionados)]
-    df["NIVEL_ED_TEXTO"] = df["NIVEL_ED"].map(NIVEL_EDUCATIVO_MAP)
+    """
+    Obtiene el nivel educativo más común (ponderado) para cada intervalo etario seleccionado.
 
+    Args:
+        df (pd.DataFrame): DataFrame con los datos individuales (incluye 'CH06', 'NIVEL_ED' y 'PONDERA').
+        intervalos_seleccionados (list of str): Lista de nombres de intervalos a analizar.
+
+    Returns:
+        pd.DataFrame: DataFrame con columnas 'Intervalo', 'Nivel Educativo' y su orden 'Nivel Ordinal'.
+    """
+
+    # Crear una copia del DataFrame para evitar modificar el original
+    df = df.copy()
+
+    # Crear columna nueva con el nombre del intervalo etario al que pertenece cada persona según su edad (CH06)
+    df["Intervalo"] = df["CH06"].apply(asignar_intervalo)
+
+    # Filtrar solo los intervalos seleccionados por el usuario
+    df = df[df["Intervalo"].isin(intervalos_seleccionados)]
+
+    # Mapear el código de nivel educativo a un texto descriptivo (ej: 6 → "Universitario completo")
+    df["NIVEL_ED_TEXTO"] = df["NIVEL_ED"].map(NIVEL_EDUCATIVO_MAP, na_action='ignore')
+
+    # Lista donde se almacenará el resultado por intervalo
     resultado = []
+
+    # Iterar por cada intervalo seleccionado
     for intervalo in intervalos_seleccionados:
+        # Filtrar personas que pertenecen a este intervalo específico
         df_int = df[df["Intervalo"] == intervalo]
+
+        # Si no hay datos para este intervalo, agregar un registro de "Sin datos"
         if df_int.empty:
             resultado.append((intervalo, "Sin datos", 0))
             continue
 
+        # Agrupar por nivel educativo y sumar la columna de ponderación para tener un total representativo
         nivel_ponderado = (
             df_int.groupby("NIVEL_ED_TEXTO")["PONDERA"].sum()
-            .sort_values(ascending=False)
+            .sort_values(ascending=False)  # Ordenar de mayor a menor
         )
 
+        # Obtener el nivel educativo con mayor ponderación (más representativo)
         nivel_mas_comun = nivel_ponderado.idxmax()
-        # Buscar clave en el dict original (ordinal)
+
+        # Buscar el número (ordinal) correspondiente al nombre del nivel educativo más común
         ordinal = next((k for k, v in NIVEL_EDUCATIVO_MAP.items() if v == nivel_mas_comun), 0)
+
+        # Agregar los resultados del intervalo a la lista
         resultado.append((intervalo, nivel_mas_comun, ordinal))
 
-
+    # Convertir el resultado a un DataFrame
     return pd.DataFrame(resultado, columns=["Intervalo", "Nivel Educativo", "Nivel Ordinal"])
 
 
 def graficar_nivel_mas_comun_ordinal(df_resultado):
+    """
+    Crea un gráfico de barras horizontales con el nivel educativo más común por grupo etario.
+
+    Args:
+        df_resultado (pd.DataFrame): DataFrame con columnas "Intervalo", "Nivel Educativo", "Nivel Ordinal".
+
+    Returns:
+        matplotlib.figure.Figure: Figura con el gráfico generado.
+    """
     fig, ax = plt.subplots(figsize=(10, 6), facecolor='#0e1117')
     ax.set_facecolor('#0e1117')
 
@@ -154,7 +202,7 @@ def graficar_nivel_mas_comun_ordinal(df_resultado):
     return fig
 
 # -------------------- 1.6.3 --------------------
-def ranking_aglomerado_EJ4(df_ind: pd.DataFrame, df_hog: pd.DataFrame, diccionario_aglomerados: dict, anio: int, trimestre: int) -> list[tuple[str, float]]:
+def ranking_aglomerado_EJ4(df_ind: pd.DataFrame, df_hog: pd.DataFrame, diccionario_aglomerados: dict, anio: int, trimestre: int):
     """
     Calcula el top 5 de aglomerados con mayor porcentaje de hogares
     que tienen 2 o más integrantes con estudios universitarios completos (NIVEL_ED=6),
@@ -173,8 +221,8 @@ def ranking_aglomerado_EJ4(df_ind: pd.DataFrame, df_hog: pd.DataFrame, diccionar
     """
     try:
         # Filtrar ambos DataFrames al período solicitado
-        df_ind = df_ind[(df_ind["ANO4"] == anio) & (df_ind["TRIMESTRE"] == trimestre)]
-        df_hog = df_hog[(df_hog["ANO4"] == anio) & (df_hog["TRIMESTRE"] == trimestre)]
+        df_ind = df_ind[(df_ind["ANO4"] == anio) & (df_ind["TRIMESTRE"] == trimestre)].copy()
+        df_hog = df_hog[(df_hog["ANO4"] == anio) & (df_hog["TRIMESTRE"] == trimestre)].copy()
 
         # Filtrar personas con nivel educativo 6
         df_univ = df_ind[df_ind["NIVEL_ED"] == 6]
@@ -200,10 +248,11 @@ def ranking_aglomerado_EJ4(df_ind: pd.DataFrame, df_hog: pd.DataFrame, diccionar
 
         # Convertir a lista de tuplas (nombre_aglomerado, porcentaje)
         ranking = []
-        for _, row in resumen.iterrows():
-            codigo = str(int(row["AGLOMERADO"])).zfill(2)
+        for row in resumen.itertuples(index=False):
+         
+            codigo = str(int(row.AGLOMERADO)).zfill(2)  
             nombre = diccionario_aglomerados.get(codigo, f"Aglomerado {codigo}")
-            porcentaje = round(row["porcentaje"], 2)
+            porcentaje = round(row.porcentaje, 2) 
             ranking.append((nombre, porcentaje))
 
         # Ordenar y devolver top 5
@@ -215,7 +264,7 @@ def ranking_aglomerado_EJ4(df_ind: pd.DataFrame, df_hog: pd.DataFrame, diccionar
         return []
     
 # -------------------- 1.6.4 --------------------
-def porcentaje_alfabetismo_por_anio(df_ind: pd.DataFrame) -> pd.DataFrame:
+def porcentaje_alfabetismo_por_anio(df_ind: pd.DataFrame):
     """
     Calcula el porcentaje de personas mayores a 6 años que saben o no leer y escribir,
     año por año.

@@ -141,7 +141,6 @@ def ano_y_trimestre_menor_desocupacion_PB_EJ3(path_procesado):
                 ano_trimestres[clave] +=pondera
     # Buscar la clave(ano, trimestre) con menor decupacion
     menor_clave = min(ano_trimestres, key=ano_trimestres.get)
-    menor_valor = ano_trimestres[menor_clave]
     print(f"El menor nivel de desocupacion fue en el ano {menor_clave[0]}, trimestre {menor_clave[1]}")
     
 
@@ -333,21 +332,36 @@ menos en nivel universitario o superior. """
 
 # ----------------------------------SECCION B---------------------------------
 def tabla_nivel_educativo_por_aglomerado_EJ_9B(individual_path):
-    """Genera tabla de niveles educativos para un aglomerado específico."""
-    
-    # Pedir y normalizar input (elimina ceros izquierda para comparación)
+   
+    """
+    Procesa los datos del archivo CSV y devuelve una tabla con la cantidad ponderada de personas mayores de edad
+    por nivel educativo, agrupadas por año y trimestre, para un aglomerado seleccionado por el usuario.
+
+    Args:
+        individual_path (str): Ruta al archivo CSV de datos individuales.
+
+    Returns:
+        tuple[str, list[dict]]: El código del aglomerado elegido y una lista de diccionarios con los resultados.
+    """
     aglomerado_elegido = input("\nIngrese el código del aglomerado (ej: 2 o 02 para La Plata): ").strip().lstrip("0")
-    if not aglomerado_elegido:  # Si ingresa "0" o ""
+    if not aglomerado_elegido:
         aglomerado_elegido = "0"
+
+    # Asegurarse de tener dos dígitos para buscar en el diccionario
+    codigo_formateado = aglomerado_elegido.zfill(2)
+
+    try:
+        nombre_aglomerado = diccionario_aglomerados[codigo_formateado]
+    except KeyError:
+         print(f"\nEl código '{aglomerado_elegido}' no corresponde a ningún aglomerado conocido.")
+         return codigo_formateado, []
 
     tabla = defaultdict(lambda: defaultdict(int))
 
     with open(individual_path, newline='', encoding='latin-1') as f:
         reader = csv.DictReader(f, delimiter=';')
         for row in reader:
-            # Normaliza el aglomerado del CSV (elimina ceros izquierda)
-            aglo_csv = row['AGLOMERADO'].lstrip("0") or "0"  # "02" -> "2", "00" -> "0"
-            
+            aglo_csv = row['AGLOMERADO'].lstrip("0") or "0"
             if aglo_csv != aglomerado_elegido:
                 continue
 
@@ -366,26 +380,46 @@ def tabla_nivel_educativo_por_aglomerado_EJ_9B(individual_path):
             except (ValueError, KeyError):
                 continue
 
+    # Si no hay datos, devolver aglomerado y lista vacía
     if not tabla:
-        print(f"\nNo se encontraron datos para el aglomerado {aglomerado_elegido}")
-        return
+        return nombre_aglomerado, []
 
-    # Mostrar resultados (similar a tu versión original)
-    print(f"\nTabla para aglomerado {aglomerado_elegido}:")
-    print("Año | Trimestre | Sin instr. | Prim. Inc. | Prim. Comp. | Sec. Inc. | Sec. Comp. | Sup. Univ.")
+    # Preparar resultados como lista de diccionarios
+    resultado = []
     for (año, trim) in sorted(tabla.keys(), reverse=True):
         niveles = tabla[(año, trim)]
-        fila = [
-            año,
-            trim,
-            f"{niveles.get(7, 0):,.0f}",
-            f"{niveles.get(1, 0):,.0f}",
-            f"{niveles.get(2, 0):,.0f}",
-            f"{niveles.get(3, 0):,.0f}",
-            f"{niveles.get(4, 0):,.0f}",
-            f"{niveles.get(5, 0) + niveles.get(6, 0):,.0f}"
-        ]
-        print("{:<4} | {:<9} | {:<11} | {:<10} | {:<12} | {:<8} | {:<9} | {:<12}".format(*fila))
+        fila = {
+            "Año": año,
+            "Trimestre": trim,
+            "Sin instrucción": round(niveles.get(7, 0)),
+            "Primario incompleto": round(niveles.get(1, 0)),
+            "Primario completo": round(niveles.get(2, 0)),
+            "Secundario incompleto": round(niveles.get(3, 0)),
+            "Secundario completo": round(niveles.get(4, 0)),
+            "Superior universitario": round(niveles.get(5, 0) + niveles.get(6, 0))
+        }
+        resultado.append(fila)
+
+    return nombre_aglomerado, resultado
+
+def imprimir_tabla_nivel_ed_EJ_9B(aglomerado, tabla):
+    if not tabla:
+        print(f"\nNo se encontraron datos para el aglomerado {aglomerado}")
+        return
+
+    print(f"\nTabla para aglomerado {aglomerado}:")
+    print("Año | Trimestre | Sin instr. | Prim. Inc. | Prim. Comp. | Sec. Inc. | Sec. Comp. | Sup. Univ.")
+    for fila in tabla:
+        print("{:<4} | {:<9} | {:<11} | {:<10} | {:<12} | {:<8} | {:<9} | {:<12}".format(
+            fila["Año"], fila["Trimestre"],
+            f"{fila['Sin instrucción']:,}",
+            f"{fila['Primario incompleto']:,}",
+            f"{fila['Primario completo']:,}",
+            f"{fila['Secundario incompleto']:,}",
+            f"{fila['Secundario completo']:,}",
+            f"{fila['Superior universitario']:,}"
+        ))
+
         
         
 def informar_tabla_porcentaje_10B(file_csv_individuos):
