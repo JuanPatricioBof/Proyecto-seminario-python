@@ -4,18 +4,6 @@ import json
 import streamlit as st
 
 
-def mapear_nivel_educativo(serie_nivel_ed):
-    nivel_educativo_map = {
-        1: "Primario incompleto",
-        2: "Primario completo", 
-        3: "Secundario incompleto",
-        4: "Secundario completo",
-        5: "Superior universitario incompleto",
-        6: "Superior universitario completo",
-        7: "Sin instrucción",
-        9: "Ns/Nr"
-    }
-    return serie_nivel_ed.rename(index=nivel_educativo_map).sort_index()
 
 def format_number(x):
     if isinstance(x, (int, float)):

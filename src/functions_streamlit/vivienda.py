@@ -333,12 +333,10 @@ def viviendas_en_villa_por_aglomerado(df, diccionario_aglomerados):
     return resumen.sort_values(by='Cantidad', ascending=False)
 
 
-def porcentaje_viviendas_por_condicion(df, diccionario_aglomerados, ano):
+def porcentaje_viviendas_por_condicion(df, diccionario_aglomerados):
     df = df.copy()
     df['AGLOMERADO'] = df['AGLOMERADO'].astype(str).str.zfill(2)
 
-    # Filtrar por año seleccionado
-    df = df[df['ANO4'] == ano]
 
     # Agrupamos por aglomerado y condición de habitabilidad
     tabla = df.groupby(['AGLOMERADO', 'CONDICION_DE_HABITABILIDAD']).size().unstack(fill_value=0)

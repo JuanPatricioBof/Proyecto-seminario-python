@@ -4,9 +4,9 @@ import json
 import folium
 from streamlit_folium import st_folium
 import matplotlib.pyplot as plt
-from pathlib import Path
 from src.utils.constants import diccionario_aglomerados, PROJECT_PATH,PATHS
 from src.functions_streamlit.empleo import *
+from src.functions_streamlit.educacion import procesar_niveles_educativos, crear_grafico_barras, NIVEL_EDUCATIVO_MAP
 from src.utils.loader import cargar_parcial_csv,cargar_json
 
 # Configuración inicial
@@ -21,20 +21,17 @@ fechas_disponibles = cargar_json(PATHS["individual"]["json"])
 with open(PROJECT_PATH/'files' / "aglomerados_coordenadas.json", "r") as f:
     coordenadas_aglomerados =json.load(f)
 
+
+anos_disponibles = sorted([int(a) for a in fechas_disponibles.keys()], reverse=True)
+ano_seleccionado = st.selectbox("Elegir Año", anos_disponibles)
+trimestres_disponibles = sorted([int(t) for t in fechas_disponibles[ano_seleccionado]])
+trimestre_seleccionado = st.selectbox("Trimestre", trimestres_disponibles)
+
 # -------------------- 1.5.1 --------------------
-
-# Sidebar
-with st.sidebar:
-    st.header("Filtros")
-    anos_disponibles = sorted([int(a) for a in fechas_disponibles.keys()], reverse=True)
-    ano_seleccionado = st.selectbox("Año", anos_disponibles)
-    trimestres_disponibles = sorted([int(t) for t in fechas_disponibles[ano_seleccionado]])
-    trimestre_seleccionado = st.selectbox("Trimestre", trimestres_disponibles)
-
 # Filtrado
 datos_filtrados = df[
-    (df['ANO4'] == ano_seleccionado) & 
-    (df['TRIMESTRE'] == trimestre_seleccionado) & 
+    (df['ANO4'] == ano_seleccionado) &
+    (df['TRIMESTRE'] == trimestre_seleccionado) &
     (df['ESTADO'] == 2)
 ]
 
@@ -42,36 +39,36 @@ if datos_filtrados.empty:
     st.warning(f"No hay desocupados para {ano_seleccionado} T{trimestre_seleccionado}")
     st.stop()
 
-conteo = datos_filtrados.groupby('NIVEL_ED')['PONDERA'].sum().round().astype(int)
-conteo = mapear_nivel_educativo(conteo)
+# Procesamiento
+conteo = procesar_niveles_educativos(datos_filtrados, ano_seleccionado)
 
 # Visualización
 st.subheader(f"Desocupados - {ano_seleccionado} T{trimestre_seleccionado}")
 
 # Gráfico y métricas
 col1, col2 = st.columns([3, 1])
-with col1:
-    st.bar_chart(conteo)
-with col2:
-    st.metric("Total", f"{conteo.sum():,.0f}".replace(",", "."))
 
-df_resultado = pd.DataFrame({
-    'Nivel Educativo': conteo.index,
-    'Cantidad': conteo.values,
-    'Porcentaje': (conteo.values / conteo.sum() * 100).round(1)
-})
+with col1:
+    grafico = crear_grafico_barras(conteo, ano_seleccionado)
+    st.pyplot(grafico)
+
+with col2:
+    total = conteo["Cantidad Ponderada"].sum()
+    st.metric("Total", f"{total:,.0f}".replace(",", "."))
+
+# Tabla con porcentajes
+conteo["Porcentaje"] = (conteo["Cantidad Ponderada"] / total * 100).round(1)
 
 st.dataframe(
-    df_resultado.style.format({
-        'Cantidad': format_number,
-        'Porcentaje': "{:.1f}%"
+    conteo.style.format({
+        "Cantidad Ponderada": format_number,
+        "Porcentaje": "{:.1f}%"
     }).hide(axis="index"),
     use_container_width=True,
     height=min(400, 35 * len(conteo) + 35)
 )
-
 # -------------------- 1.5.2 --------------------
-st.subheader("1.5.2 Evolución de la tasa de desempleo")
+st.subheader("Evolución de la tasa de desempleo")
 
 nombre = st.selectbox("Filtrar por aglomerado (opcional)", ["Todo el pais"] + list(diccionario_aglomerados.values()))
 codigo_aglo = next((k for k, v in diccionario_aglomerados.items() if v == nombre), None) if nombre else None
@@ -84,7 +81,7 @@ else:
     st.warning("No hay datos disponibles para el período/aglom. seleccionado.")
 
 # -------------------- 1.5.3 --------------------
-st.subheader("1.5.3 Evolución de la tasa de empleo")
+st.subheader("Evolución de la tasa de empleo")
 
 nombre = st.selectbox("Filtrar por aglomerado (opcional)", ["Todo el país"] + list(diccionario_aglomerados.values()))
 codigo_aglo = next((k for k, v in diccionario_aglomerados.items() if v == nombre), None) if nombre != "Todo el país" else None
