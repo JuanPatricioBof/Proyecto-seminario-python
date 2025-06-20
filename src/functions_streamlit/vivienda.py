@@ -321,9 +321,10 @@ def evolucion_regimen(anio,aglomerado_elegido,df_viviendas):
     else:
         st.warning('Seleccione al menos una variable para mostrar el gráfico.')
         
-
-def viviendas_en_villa_por_aglomerado(df, diccionario_aglomerados):
+# inciso 6
+def viviendas_en_villa_por_aglomerado(df):
     """
+    Recibe el dataframe filtrado por año.
     Devuelve cantidad y porcentaje de viviendas en villa por aglomerado (nombre),
     ordenado de forma decreciente por cantidad.
     """
@@ -349,8 +350,13 @@ def viviendas_en_villa_por_aglomerado(df, diccionario_aglomerados):
     resumen = resumen[['Aglomerado', 'Cantidad', 'Porcentaje']]
     return resumen.sort_values(by='Cantidad', ascending=False)
 
-
-def porcentaje_viviendas_por_condicion(df, diccionario_aglomerados):
+# inciso 7
+def porcentaje_viviendas_por_condicion(df):
+    """
+        Recibe el dataframe filtrado por año y devuelve una tabla
+        con los porcentajes de cada condición de habitabilidad para
+        cada aglomerado
+    """
     df = df.copy()
     df['AGLOMERADO'] = df['AGLOMERADO'].astype(str).str.zfill(2)
 
