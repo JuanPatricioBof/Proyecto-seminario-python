@@ -9,8 +9,40 @@ import numpy as np
 
 from src.utils.constants import diccionario_aglomerados
 
+def filtrar_dataframe(df_viviendas, op):
+        
+    if(op != 'Mostrar para todos los años'):
+        df_filtrado = df_viviendas[df_viviendas['ANO4']==op]
+    else:
+        df_filtrado = df_viviendas
+
+    # genero la columna PERIODO con el año y trimestre
+    df_filtrado["PERIODO"] = df_filtrado["ANO4"].astype(str) + "T" + df_filtrado["TRIMESTRE"].astype(str)
+
+    # Agrupo por CODUSU, quedandome con los datos más recientes para cada columna
+    idx_ultimos = df_filtrado.groupby("CODUSU")["PERIODO"].idxmax()
+    df_ultimos = df_filtrado.loc[idx_ultimos]
+
+    # calculo el valor promedio de PONDERA para cada CODUSU
+    ponderacion_promedio = df_filtrado.groupby('CODUSU',as_index=False)['PONDERA'].mean()
+
+    # Reemplazo el valor más reciente de PONDERA con el valor promedio
+    df_final = df_ultimos.drop(columns=["PONDERA"]).merge(ponderacion_promedio, on="CODUSU", how="left")
+
+    # Transformo la columna PONDERA a valores enteros
+    df_final["PONDERA"] = df_final["PONDERA"].fillna(0).astype(int)
+
+    st.dataframe(df_final.head(30))
+
+    return df_final
+
+
+
+
 def hogares_encuestados(df_filtrado):
-        return df_filtrado['PONDERA'].sum()
+    viviendas = df_filtrado.groupby(['CODUSU'])['PONDERA'].mean()
+    total_encuestados = int(viviendas.sum())
+    st.write(f' - Cantidad de hogares encuestados🏠: {total_encuestados:,}')
 
 
 def categoria(tipo):
@@ -36,10 +68,10 @@ def categoria(tipo):
                 return 'indefinido' 
 
 
-def mostrar_grafico_torta(df_filtrado, total_encuestados):
+def mostrar_grafico_torta(df_filtrado):
     
     tipos_viviendas = df_filtrado.groupby('IV1')['PONDERA'].sum()      
-    
+    total_encuestados = df_filtrado['PONDERA'].sum()
     etiquetas = [f'{categoria(tipo)} ({(valor/total_encuestados):0.1%})' for tipo, valor in tipos_viviendas.items()]
     
     figura, ejex = plt.subplots(figsize=(5,3))
@@ -74,7 +106,7 @@ def material_piso(tipo_piso):
         case 4:
                 return 'otro'
         case _:
-                return 'indefinido'
+                return 'sin información'
         
 
 def mostrar_piso_dominante(fila):
@@ -86,37 +118,49 @@ def mostrar_piso_dominante(fila):
         st.warning(f'no se encontró el aglomerado {num_aglo}. Omitido')
 
 
+
 def informar_piso_dominante_por_aglomerado(df_filtrado):
-    # alternativa para mostrar: usar st.dataframe (permite descargar como csv, entre otros)  
     """
-    Los pisos interiores son principalmente
-    de...   
-    1. mosaico / baldosa / madera /
-    cerámica / alfombra
-    2. cemento / ladrillo fijo
-    3. ladrillo suelto / tierra
-    4. otro
+        Recibe el dataframe filtrado por año y muestra para cada aglomerado
+        el tipo de piso interior dominante en formato dataframe (En caso de
+        que no haya datos disponibles lo avisa).
     """  
         
     # agrupo por aglomerado y por tipo de piso, cuento la cant de hogares
-    pisos = df_filtrado.groupby(['AGLOMERADO','IV3'])['PONDERA'].sum()
+    pisos_por_aglo = df_filtrado.groupby(['AGLOMERADO','IV3'])['PONDERA'].sum()
 
-    # reseteo el indice para poder trabajar con el aglomerado y piso como valores, ordeno por columna pondera
-    piso2 = pisos.reset_index().sort_values(by=['PONDERA'],ascending=False)
+    # reseteo el indice para poder trabajar con el aglomerado y piso como valores, ordeno por columna PONDERA
+    df_tipo_piso = pisos_por_aglo.reset_index().sort_values(by=['PONDERA'],ascending=False)
 
     # filtro los aglomerados repetidos para quedarme solo con el piso dominante
-    pisos3 = piso2.drop_duplicates(subset='AGLOMERADO',keep='first')
+    df_piso_dominante = df_tipo_piso.drop_duplicates(subset='AGLOMERADO',keep='first')
 
-    # muestro la informacion
-    pisos3.apply(mostrar_piso_dominante, axis=1)
+    # lista de aglomerados que están en el dataframe:
+    aglomerados_df = [aglo.zfill(2) for aglo in df_piso_dominante['AGLOMERADO'].unique().astype(str)]
 
-    # aglomerados que si estan en el dataset:
-    aglomerados = [aglo.zfill(2) for aglo in pisos3['AGLOMERADO'].unique().astype(str)]
+    # genero las filas con los aglomerados que faltan
+    nuevas_filas = pd.DataFrame([
+            {'AGLOMERADO': aglo, 'IV3': 0, 'PONDERA': 0} 
+            for num, aglo in diccionario_aglomerados.items()
+            if not num in aglomerados_df
+         ])
+    
+    # añado las nuevas filas al dataframe
+    aglomerados_df = pd.concat([df_piso_dominante,nuevas_filas], ignore_index=True)
 
-    # muestro aglomerados que no están en el dataset
-    for num, aglo in diccionario_aglomerados.items():
-        if not num in aglomerados:
-            st.write(f'{aglo}({num}): sin información')
+    # Genero y renombro columnas para la visualización de la información
+    aglomerados_df['Aglomerado'] = aglomerados_df['AGLOMERADO'].astype(str).str.zfill(2).map(diccionario_aglomerados)
+    aglomerados_df['Tipo de piso predominante'] = aglomerados_df['IV3'].apply(material_piso)  
+    aglomerados_df.rename(columns={'AGLOMERADO' : 'Código'},inplace=True)
+
+    # Asigno el nombre del aglomerado como índice
+    aglomerados_df.set_index('Aglomerado',inplace=True)
+    
+    # borro columnas que no quiero mostrar
+    aglomerados_df.drop(columns=['IV3','PONDERA'],inplace=True)
+    
+    # muestro el dataframe
+    st.dataframe(aglomerados_df)
 
 
 def mostrar_banios_por_aglomerado(df_filtrado):
@@ -160,42 +204,6 @@ def mostrar_grafico_barras(dict_viviendas):
     st.pyplot(figura)
 
 
-diccionario_aglomerados_inv={
-    'Gran La Plata' : '02',
-    'Bahía Blanca - Cerri': '03' ,
-    'Gran Rosario' : '04',
-    'Gran Santa Fé' : '05',
-    'Gran Paraná' : '06',
-    'Posadas' : '07',
-    'Gran Resistencia' : '08',
-    'Comodoro Rivadavia - Rada Tilly' : '09',
-    'Gran Mendoza' : '10',
-    'Corrientes' : '12',
-    'Gran Córdoba' : '13',
-    'Concordia' : '14',
-    'Formosa' : '15',
-    'Neuquén - Plottier' : '17',
-    'Santiago del Estero - La Banda' : '18',
-    'Jujuy - Palpalá' : '19',
-    'Río Gallegos' : '20',
-    'Gran Catamarca' : '22',
-    'Gran Salta' : '23',
-    'La Rioja' : '25',
-    'Gran San Luis' : '26',
-    'Gran San Juan' : '27',
-    'Gran Tucumán - Tafí Viejo' : '29',
-    'Santa Rosa - Toay' : '30',
-    'Ushuaia - Río Grande' : '31',
-    'Ciudad Autónoma de Buenos Aires' : '32',
-    'Partidos del GBA' : '33',
-    'Mar del Plata' : '34',
-    'Río Cuarto' : '36',
-    'San Nicolás - Villa Constitución' : '38',
-    'Rawson - Trelew' : '91',
-    'Viedma- Carmen de Patagones' : '93',
-    }
-
-
 def obtener_valor(coincidencia,ponderacion):
     if coincidencia:
         return ponderacion
@@ -226,7 +234,7 @@ def obtener_regimen(num):
         case 8:
             return 'En sucesión'
         case 9:
-            return 'Otro'
+              return 'Otro'
         case _:
             return 'Indefinido'
 
@@ -235,42 +243,54 @@ def calcular_porcentaje(valor,total):
     return int(valor)*100 / int(total)
 
 
-def evolucion_regimen(aglomerado_elegido,df_filtrado):
-    # filtrar por aglomerado
+def evolucion_regimen(anio,aglomerado_elegido,df_viviendas):
+    
+    # filtro por año 
+    if(anio != 'Mostrar para todos los años'):
+        df_filtrado = df_viviendas[df_viviendas['ANO4']==anio]
+    else:
+        df_filtrado = df_viviendas
+
+    # obtengo el nombre del aglomerado de cada fila para poder filtrar
+    aglomerados_filas = df_filtrado['AGLOMERADO'].astype(str).str.zfill(2).map(diccionario_aglomerados)
+    
+    # filtro por aglomerado
     df_aglomerado_elegido = df_filtrado[
-        df_filtrado['AGLOMERADO']== int(diccionario_aglomerados_inv[aglomerado_elegido])
+        (aglomerados_filas==aglomerado_elegido)&
+        (df_filtrado['II7'].isin(range(1,10)))
         ].copy() 
 
-    # si df vacio, no procesar !!
+    # si está vacío, no lo proceso
+    if(df_aglomerado_elegido.empty):
+         st.warning('No hay datos para el aglomerado elegido')
+         return
 
-    #agrupar por año, trimestre y tipo
+    # agrupo por año, trimestre y tipo de régimen
     df_por_regimen = df_aglomerado_elegido.groupby(['ANO4','TRIMESTRE','II7'])['PONDERA'].sum().reset_index()
-    # chequeo
-    #st.dataframe(df_por_regimen)
-
-    # genero para cada tipo de regimen, una nueva columna   
+    
+    # genero para cada tipo de régimen, una columna con la cantidad de viviendas con ese régimen
     for i in range (0,10):
-        df_por_regimen[obtener_regimen(i)] = df_por_regimen.apply(
-            lambda x: obtener_valor(int(x['II7'])==i, x['PONDERA']), axis=1
-            )
+        df_por_regimen[obtener_regimen(i)] = (df_por_regimen['II7']==i)*df_por_regimen['PONDERA']
 
-    # genero columna periodo 
+    # genero columna PERIODO con la información de año y trimestre 
     df_por_regimen['PERIODO'] = df_por_regimen.apply(
         lambda x: obtener_periodo(x['ANO4'],x['TRIMESTRE']),axis=1
         )
 
     # actualizo el indice
     df_por_regimen.set_index('PERIODO',inplace=True)
-    # chequeo
-    #st.dataframe(df_por_regimen)
 
-    # elimino columnas, agrupo por periodo y sumo las ponderaciones
-    df_por_regimen = df_por_regimen.drop(columns=['ANO4','TRIMESTRE','II7']).groupby(['PERIODO']).sum()
+    # elimino las columnas que ya usé
+    df_por_regimen.drop(columns=['ANO4','TRIMESTRE','II7'], inplace = True)
 
-    # aplico la operacion para calcular el porcentaje
+    # agrupo por PERIODO sumando las columnas 
+    df_por_regimen = df_por_regimen.groupby(['PERIODO']).sum()
+
+    # ahora para cada fila tengo la cantidad total de viviendas en ese periodo (PONDERA), y la cantidad
+    # de viviendas para cada regimen en su respectiva columna
+
+    # para fila, calculo el porcentaje de todas las columnas
     df_por_regimen = df_por_regimen.apply((lambda x : (x*100)/df_por_regimen['PONDERA'])).drop('PONDERA',axis=1)
-    # chequeo
-    #st.dataframe(df_por_regimen)
 
     # armar grafico
     # ver si sacar 'indefinido' o dejarla
@@ -284,33 +304,6 @@ def evolucion_regimen(aglomerado_elegido,df_filtrado):
     else:
         st.warning('Seleccione al menos una variable para mostrar el gráfico.')
         
-    def viviendas_en_villa_por_aglomerado(df, diccionario_aglomerados):
-        """
-        Devuelve cantidad y porcentaje de viviendas en villa por aglomerado (nombre),
-        ordenado de forma decreciente por cantidad.
-        """
-        df = df[df['IV12_3'].isin([1, 2])].copy()
-
-        total_por_aglo = df.groupby('AGLOMERADO').size()
-        en_villa = df[df['IV12_3'] == 1].groupby('AGLOMERADO').size()
-
-        resumen = pd.DataFrame({
-            'Cantidad': en_villa,
-            'Total': total_por_aglo
-        }).fillna(0)
-
-        resumen['Cantidad'] = resumen['Cantidad'].astype(int)
-        resumen['Porcentaje'] = (resumen['Cantidad'] / resumen['Total'] * 100).round(2)
-
-        # Agregar nombre del aglomerado
-        resumen = resumen.reset_index()
-        resumen['AGLOMERADO'] = resumen['AGLOMERADO'].astype(str).str.zfill(2)
-        resumen['Aglomerado'] = resumen['AGLOMERADO'].map(diccionario_aglomerados)
-
-        # Reordenar columnas y ordenar
-        resumen = resumen[['Aglomerado', 'Cantidad', 'Porcentaje']]
-        return resumen.sort_values(by='Cantidad', ascending=False)
-
 
 def viviendas_en_villa_por_aglomerado(df, diccionario_aglomerados):
     """
