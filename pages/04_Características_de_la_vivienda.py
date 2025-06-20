@@ -60,9 +60,9 @@ aglomerado_elegido = st.selectbox(
 evolucion_regimen(op,aglomerado_elegido,df_viviendas)
 
 
-#Inciso 6
+#Inciso 6: mostrar cantidad de viviendas ubicadas en villa de emergencia por aglomerado
 st.subheader("Cantidad de viviendas ubicadas en villa de emergencia por aglomerado")
-resumen = viviendas_en_villa_por_aglomerado(df_filtrado, diccionario_aglomerados)
+resumen = viviendas_en_villa_por_aglomerado(df_filtrado)
 st.dataframe(
     resumen.style.format({
         'Cantidad': '{:,.0f}',
@@ -72,9 +72,9 @@ st.dataframe(
     height=min(500, 35 * len(resumen) + 35)
 )
 
-#Inciso 7
+#Inciso 7: mostrar para cada aglomerado el porcentaje de viviendas por CONDICION_DE_HABITABILIDAD
 st.subheader("Porcentaje de vivendas para cada condicion de habitabilidad")
-tabla_resultado = porcentaje_viviendas_por_condicion(df_filtrado, diccionario_aglomerados)
+tabla_resultado = porcentaje_viviendas_por_condicion(df_filtrado)
 
 st.dataframe(tabla_resultado, use_container_width=True)
 
