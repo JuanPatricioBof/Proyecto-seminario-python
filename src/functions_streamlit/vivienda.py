@@ -80,18 +80,36 @@ def mostrar_grafico_torta(df_filtrado):
         Recibe el Dataframe filtrado por año y genera un gráfico
         de torta con el porcentaje de cada tipo de vivienda
     """
+    # valores del gráfico
     tipos_viviendas = df_filtrado.groupby('IV1')['PONDERA'].sum()      
     total_encuestados = df_filtrado['PONDERA'].sum()
+    # etiquetas de los valores
     etiquetas = [f'{categoria(tipo)} ({(valor/total_encuestados):0.1%})' for tipo, valor in tipos_viviendas.items()]
     
     figura, ejex = plt.subplots(figsize=(5,3))
     
+    # configuro el fondo transparente
+    figura.patch.set_alpha(0)
+    ejex.set_facecolor("none")
+
+    # configuro colores del gráfico
+    colores = [
+    "#4363d8",
+    "#e6194b", 
+    "#3cb44b",
+    "#ffe119", 
+    "#f58231",
+    "#911eb4", 
+    ]
+
     ejex.pie(
         tipos_viviendas,
         autopct=None,
-        labels=None
+        labels=None,
+        colors=colores
     )
 
+    # leyenda con las etiquetas
     ejex.legend(
         title = 'Tipo de vivienda',
         labels = etiquetas,
@@ -193,8 +211,18 @@ def mostrar_grafico_barras_horizontal(dict_viviendas):
     figura, ax = plt.subplots(figsize=(8, len(valores) * 0.3))
 
     y_pos = np.arange(len(etiquetas))
+    colores = ["#4363d8","#e6194b", "#3cb44b", "#ffe119"]
 
-    ax.barh(y_pos, valores)
+    # saco el fondo
+    figura.patch.set_alpha(0)
+    ax.set_facecolor("none")
+
+    # cambio el color de texto a blanco
+    ax.tick_params(colors="white")
+    ax.xaxis.label.set_color("white") 
+    ax.title.set_color("white")
+
+    ax.barh(y_pos, valores, color=colores)
     ax.set_yticks(range(len(etiquetas)))
     ax.set_yticklabels(etiquetas)
     ax.set_xlabel('Porcentaje')
