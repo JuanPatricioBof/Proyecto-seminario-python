@@ -46,7 +46,7 @@ informar_piso_dominante_por_aglomerado(df_filtrado)
 mostrar_banios_por_aglomerado(df_filtrado)
 
 # Inciso 5 : mostrar evolución de régimen de tenencia para un aglomerado elegido
-st.subheader('Evolución de régimen de tenencia')
+st.subheader('📈Evolución de régimen de tenencia')
 
 aglomerado_elegido = st.selectbox(
     'Elija un aglomerado para ver su evolución de régimen de tenencias',
@@ -57,7 +57,7 @@ evolucion_regimen(op,aglomerado_elegido,df_viviendas)
 
 
 #Inciso 6: mostrar cantidad de viviendas ubicadas en villa de emergencia por aglomerado
-st.subheader("Cantidad de viviendas ubicadas en villa de emergencia por aglomerado")
+st.subheader("🏚️Cantidad de viviendas ubicadas en villa de emergencia por aglomerado")
 resumen = viviendas_en_villa_por_aglomerado(df_filtrado)
 st.dataframe(
     resumen.style.format({
@@ -69,7 +69,7 @@ st.dataframe(
 )
 
 #Inciso 7: mostrar para cada aglomerado el porcentaje de viviendas por CONDICION_DE_HABITABILIDAD
-st.subheader("Porcentaje de vivendas para cada condicion de habitabilidad")
+st.subheader("🏢Porcentaje de vivendas para cada condicion de habitabilidad")
 tabla_resultado = porcentaje_viviendas_por_condicion(df_filtrado)
 
 st.dataframe(tabla_resultado, use_container_width=True)

@@ -99,7 +99,7 @@ def mostrar_grafico_torta(df_filtrado):
     "#3cb44b",
     "#ffe119", 
     "#f58231",
-    "#911eb4", 
+    "#911eb4"
     ]
 
     ejex.pie(
@@ -198,7 +198,6 @@ def mostrar_grafico_barras_horizontal(dict_viviendas):
        por aglomerado y genera un gráfico de barras horizontal
        con los porcentajes
     """
-    # alternativa : mostrar como dataframe 
 
     valores = []
     etiquetas = []
@@ -207,11 +206,14 @@ def mostrar_grafico_barras_horizontal(dict_viviendas):
             etiquetas.append(aglo)
             valores.append(dict_viviendas['banio_interior'][int(num)]*100 / dict_viviendas['totales'][int(num)])
 
-
     figura, ax = plt.subplots(figsize=(8, len(valores) * 0.3))
 
     y_pos = np.arange(len(etiquetas))
-    colores = ["#4363d8","#e6194b", "#3cb44b", "#ffe119"]
+    colores = [
+        "#2b5ca1"
+    ]
+
+
 
     # saco el fondo
     figura.patch.set_alpha(0)
@@ -226,7 +228,7 @@ def mostrar_grafico_barras_horizontal(dict_viviendas):
     ax.set_yticks(range(len(etiquetas)))
     ax.set_yticklabels(etiquetas)
     ax.set_xlabel('Porcentaje')
-    ax.set_title('Porcentaje de baños dentro de las viviendas por aglomerado')
+    st.subheader('📊Porcentaje de viviendas con baño interior por aglomerado')
     st.pyplot(figura)
 
 # inciso 4
