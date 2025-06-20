@@ -211,7 +211,11 @@ def ranking_aglomerado_EJ4():
     except Exception as e:
         print(f"\nError en ranking_aglomerado_EJ4: {str(e)}")
         return []
+    
+
 def imprimir_ranking_ej4():
+     """Calcula el top 5 de aglomerados con mas de 2 universitarios"""
+     
      resultados = ranking_aglomerado_EJ4()
      print("═"*60)
      print("TOP 5 AGLOMERADOS".center(60))
@@ -222,6 +226,7 @@ def imprimir_ranking_ej4():
      for i, (nombre, pct) in enumerate(resultados, 1):
         print(f"{i:<10}{nombre:<30}{pct:>20.2f}%")
         print("═"*60)
+
 
 def informar_aglomerados_porcentajes_5B(file_csv):
     """ 5. Informar para cada aglomerado el porcentaje de viviendas ocupadas por sus propietarios. """
@@ -262,10 +267,10 @@ def informar_aglomerados_porcentajes_5B(file_csv):
 
 
 def informar_aglomerado_punto6(path_procesado):
-  """Informar el aglomerado con mayor cantidad de viviendas con más de dos ocupantes
-y sin baño. Informar también la cantidad de ellas.""" 
-# 1. Abrir el archivo y leer el contenido:
-  with path_procesado.open('r',encoding='utf-8') as file_csv:
+    """Informar el aglomerado con mayor cantidad de viviendas con más de dos ocupantes
+    y sin baño. Informar también la cantidad de ellas.""" 
+    # 1. Abrir el archivo y leer el contenido:
+    with path_procesado.open('r',encoding='utf-8') as file_csv:
         reader=csv.DictReader(file_csv,delimiter=';')
         fieldnames=reader.fieldnames
         #2. Inicializar un diccionario para contar las viviendas sin baño por aglomerado:
@@ -284,9 +289,9 @@ y sin baño. Informar también la cantidad de ellas."""
                 else:
                      aglomerado_contador[aglomerado] = pondera
     #6. Encontrar el aglomerado con mayor cantidad de viviendas sin baño:
-  max_aglomerado = max(aglomerado_contador, key=aglomerado_contador.get)
-  max_count = aglomerado_contador[max_aglomerado]
-  print(f"El aglomerado con mayor cantidad de viviendas sin baño y más de dos ocupantes es:{diccionario_aglomerados[str(max_aglomerado).zfill(2)]}({max_aglomerado}) con {max_count} viviendas.")
+    max_aglomerado = max(aglomerado_contador, key=aglomerado_contador.get)
+    max_count = aglomerado_contador[max_aglomerado]
+    print(f"El aglomerado con mayor cantidad de viviendas sin baño y más de dos ocupantes es:{diccionario_aglomerados[str(max_aglomerado).zfill(2)]}({max_aglomerado}) con {max_count} viviendas.")
     
 
 def informar_nivel_universitario(path_procesado):
@@ -399,19 +404,40 @@ edad con secundario incompleto."""
         año: {...} 
     }"""
 
-    #muestro al usuario las opciones de aglomerado (imprimo diccionario de codigo:nombre)
-    salida = ''
+    # #muestro al usuario las opciones de aglomerado (imprimo diccionario de codigo:nombre)
+    # opciones = ''
+    # for key in diccionario_aglomerados:
+    #     opciones += f'{key}: {diccionario_aglomerados[key]}, '     
+    # print(salida)
+    
+    # #pido al usuario que ingrese data
+    # aglo_A = input("Ingrese código de aglomerado:_").zfill(2)
+    # aglo_B = input("Ingrese código de aglomerado:_").zfill(2)
+    
+    # if aglo_A not in diccionario_aglomerados or aglo_B not in diccionario_aglomerados:
+    #     print("Aglomerado/s inválido/s.")
+    #     return
+    
+    opciones = ''
     for key in diccionario_aglomerados:
-        salida += f'{key}: {diccionario_aglomerados[key]}, '     
-    print(salida)
+        opciones += f'{key}: {diccionario_aglomerados[key]}, '     
     
-    #pido al usuario que ingrese data
-    aglo_A = input("Ingrese código de aglomerado:_").zfill(2)
-    aglo_B = input("Ingrese código de aglomerado:_").zfill(2)
-    
-    if aglo_A not in diccionario_aglomerados or aglo_B not in diccionario_aglomerados:
-        print("Aglomerado/s inválido/s.")
-        return
+    while True:
+        print(opciones)
+        aglo_A = input("Ingrese código del 1er aglomerado: ").zfill(2)
+        if aglo_A in diccionario_aglomerados:
+            print('Codigo válido')
+            break
+        else:
+            print('Opción no válida. Intente de nuevo.')
+    while True:
+        print(opciones)
+        aglo_B = input("Ingrese código del 2do aglomerado: ").zfill(2)
+        if aglo_B in diccionario_aglomerados:
+            print('Codigo válido')
+            break
+        else:
+            print('Opción no válida. Intente de nuevo.')
     
     tabla = {}
 

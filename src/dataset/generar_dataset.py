@@ -50,6 +50,8 @@ def verificar_anio_trimestre(path_archivo: Path, anio, trimestre) -> bool:
             raise Exception(f"Error al escribir en el archivo {path_archivo.name}: {e}")
 
     return existe_anio_trimestre # FIX: No agregar el año y trimestre si no existe hasta que el recorrido de la eph finalice OK
+
+
 def limpiar_na(val):
     """Limpia valores NA, reemplazándolos por un string vacío."""
     return "" if val is None or val == "NA" else val
