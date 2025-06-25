@@ -146,67 +146,77 @@ def ano_y_trimestre_menor_desocupacion_PB_EJ3(path_procesado):
 
 def ranking_aglomerado_EJ4():
     """
-    Calcula el top 5 de aglomerados con mayor porcentaje de hogares
-    que tienen 2 o más integrantes con estudios universitarios completos (NIVEL_ED=6).
-    
+    Calcula el top 5 de aglomerados con mayor porcentaje ponderado de hogares
+    que tienen 2 o más integrantes con estudios universitarios completos (NIVEL_ED=6),
+    usando la variable PONDERA.
+
     Returns:
-        List[Tuple[str, float]]: Lista de tuplas con (nombre_aglomerado, porcentaje)
-                                ordenada de mayor a menor porcentaje.
-    """    
+        List[Tuple[str, float]]
+    """
     try:
         hogar_path = PATHS["hogar"]["csv"]
         individual_path = PATHS["individual"]["csv"]
-        
+
         # 1. Obtener el período más reciente
         with open(PATHS["hogar"]["json"], 'r', encoding='utf-8') as f:
             periodos = json.load(f)
-        
+
         ultimo_anio = max(periodos.keys())
         ultimo_trimestre = max(periodos[ultimo_anio])
-        
-        # 1. Contar universitarios por hogar
-        universitarios_por_hogar = defaultdict(int)
+
+        # 2. Sumar PONDERA de universitarios por hogar
+        universitarios_ponderados_por_hogar = defaultdict(float)
 
         with open(individual_path, newline='', encoding='utf-8') as f_ind:
             reader = csv.DictReader(f_ind, delimiter=';')
             for row in reader:
                 if (row.get('ANO4') == ultimo_anio and 
                     row.get('TRIMESTRE') == ultimo_trimestre):
+                    
                     if row.get('NIVEL_ED') == '6':
                         codusu = row.get('CODUSU')
+                        try:
+                            pondera = float(row.get('PONDERA', 0))
+                        except ValueError:
+                            pondera = 0.0
                         if codusu:
-                            universitarios_por_hogar[codusu] += 1
+                            universitarios_ponderados_por_hogar[codusu] += pondera
 
-        # 2. Contar hogares por aglomerado
-        total_hogares = defaultdict(int)
-        hogares_calificados = defaultdict(int)
+        # 3. Sumar PONDERA de todos los hogares y de los calificados por aglomerado
+        total_ponderado_por_aglomerado = defaultdict(float)
+        ponderado_calificados_por_aglomerado = defaultdict(float)
 
         with open(hogar_path, newline='', encoding='utf-8') as f_hog:
             reader = csv.DictReader(f_hog, delimiter=';')
             for row in reader:
                 if (row.get('ANO4') == ultimo_anio and 
                     row.get('TRIMESTRE') == ultimo_trimestre):
+                    
                     codusu = row.get('CODUSU')
                     aglomerado = row.get('AGLOMERADO')
+                    try:
+                        pondera_hogar = float(row.get('PONDERA', 0))
+                    except ValueError:
+                        pondera_hogar = 0.0
 
                     if codusu and aglomerado:
-                        total_hogares[aglomerado] += 1
-                        if universitarios_por_hogar.get(codusu, 0) >= 2:
-                            hogares_calificados[aglomerado] += 1
+                        total_ponderado_por_aglomerado[aglomerado] += pondera_hogar
+                        if universitarios_ponderados_por_hogar.get(codusu, 0) >= 2:
+                            ponderado_calificados_por_aglomerado[aglomerado] += pondera_hogar
 
-        # 3. Calcular porcentajes y preparar estructura
+        # 4. Calcular porcentajes y preparar ranking
         ranking = []
-        for aglo, total in total_hogares.items():
-            calificados = hogares_calificados.get(aglo, 0)
-            porcentaje = (calificados / total) * 100 if total > 0 else 0
+        for aglo, total_ponderado in total_ponderado_por_aglomerado.items():
+            ponderado_calificado = ponderado_calificados_por_aglomerado.get(aglo, 0)
+            porcentaje = (ponderado_calificado / total_ponderado) * 100 if total_ponderado > 0 else 0
             codigo_aglo = str(aglo).zfill(2)
             nombre_aglo = diccionario_aglomerados.get(codigo_aglo, f"Aglomerado {codigo_aglo}")
-            ranking.append((nombre_aglo, round(porcentaje, 2)))  # Redondeamos a 2 decimales
+            ranking.append((nombre_aglo, round(porcentaje, 2)))
 
-        # 4. Ordenar y devolver top 5
+        # 5. Ordenar y devolver top 5
         ranking.sort(key=lambda x: x[1], reverse=True)
         return ranking[:5]
-        
+
     except Exception as e:
         print(f"\nError en ranking_aglomerado_EJ4: {str(e)}")
         return []

@@ -206,56 +206,45 @@ def ranking_aglomerado_EJ4(df_ind: pd.DataFrame, df_hog: pd.DataFrame, diccionar
     """
     Calcula el top 5 de aglomerados con mayor porcentaje de hogares
     que tienen 2 o más integrantes con estudios universitarios completos (NIVEL_ED=6),
-    para un año y trimestre específico.
-
-    Args:
-        df_ind (pd.DataFrame): DataFrame de individuos.
-        df_hog (pd.DataFrame): DataFrame de hogares.
-        diccionario_aglomerados (dict): Mapeo de código a nombre de aglomerados.
-        anio (int): Año a filtrar.
-        trimestre (int): Trimestre a filtrar.
+    utilizando el factor de expansión (PONDERA), para un año y trimestre específico.
 
     Returns:
-        List[Tuple[str, float]]: Lista de tuplas con (nombre_aglomerado, porcentaje),
-                                 ordenada de mayor a menor.
+        List[Tuple[str, float]]
     """
     try:
-        # Filtrar ambos DataFrames al período solicitado
+        # Filtrar por año y trimestre
         df_ind = df_ind[(df_ind["ANO4"] == anio) & (df_ind["TRIMESTRE"] == trimestre)].copy()
         df_hog = df_hog[(df_hog["ANO4"] == anio) & (df_hog["TRIMESTRE"] == trimestre)].copy()
 
-        # Filtrar personas con nivel educativo 6
+        # Filtrar universitarios y agrupar por hogar ponderando
         df_univ = df_ind[df_ind["NIVEL_ED"] == 6]
-
-        # Contar universitarios por hogar (CODUSU)
-        conteo_univ = df_univ.groupby("CODUSU").size().reset_index(name="universitarios")
+        univ_ponderado = df_univ.groupby("CODUSU")["PONDERA"].sum().reset_index(name="universitarios_ponderados")
 
         # Unir con hogares
-        df_merged = df_hog.merge(conteo_univ, on="CODUSU", how="left")
-        df_merged["universitarios"] = df_merged["universitarios"].fillna(0)
-        df_merged["tiene_2_o_mas"] = df_merged["universitarios"] >= 2
+        df_merged = df_hog.merge(univ_ponderado, on="CODUSU", how="left")
+        df_merged["universitarios_ponderados"] = df_merged["universitarios_ponderados"].fillna(0)
 
-        # Agrupar por aglomerado
+        # Crear columna booleana si tiene 2 o más universitarios ponderados
+        df_merged["tiene_2_o_mas"] = df_merged["universitarios_ponderados"] >= 2
+
+        # Agrupar por aglomerado con ponderación
         resumen = df_merged.groupby("AGLOMERADO").agg(
-            total_hogares=("CODUSU", "count"),
-            hogares_calificados=("tiene_2_o_mas", "sum")
+            total_hogares=("PONDERA", "sum"),
+            hogares_calificados=("tiene_2_o_mas", lambda x: df_merged.loc[x.index, "PONDERA"].where(x).sum())
         ).reset_index()
 
         # Calcular porcentaje
         resumen["porcentaje"] = (resumen["hogares_calificados"] / resumen["total_hogares"]) * 100
-        
 
-
-        # Convertir a lista de tuplas (nombre_aglomerado, porcentaje)
+        # Convertir a lista de tuplas
         ranking = []
         for row in resumen.itertuples(index=False):
-         
-            codigo = str(int(row.AGLOMERADO)).zfill(2)  
+            codigo = str(int(row.AGLOMERADO)).zfill(2)
             nombre = diccionario_aglomerados.get(codigo, f"Aglomerado {codigo}")
-            porcentaje = round(row.porcentaje, 2) 
+            porcentaje = round(row.porcentaje, 2)
             ranking.append((nombre, porcentaje))
 
-        # Ordenar y devolver top 5
+        # Devolver top 5 ordenado
         ranking.sort(key=lambda x: x[1], reverse=True)
         return ranking[:5]
 
