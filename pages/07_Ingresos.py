@@ -24,11 +24,15 @@ canasta_promedio=ingresos.procesar_canasta(df_canasta)
 st.subheader("Selección de Año y Trimestre")
 
 hogares_disponibles = {int(anio): trimestres for anio, trimestres in fechas_disponibles.items()}
-todos_los_anios = list(range(2016, 2026))
-anio_usuario = st.selectbox("Seleccione el año", todos_los_anios)
-todos_los_trimestres = [1, 2, 3, 4]
-trimestre_usuario = st.selectbox("Seleccione el trimestre", todos_los_trimestres)
+# Obtenemos los años y trimestres realmente disponibles en el CSV de la canasta procesado
+anios_canasta = canasta_promedio['ANIO'].unique()
+anios_canasta.sort()
+anio_usuario = st.selectbox("Seleccione el año", anios_canasta)
 
+# Filtramos los trimestres disponibles para ese año en el CSV
+trimestres_disponibles = canasta_promedio[canasta_promedio['ANIO'] == anio_usuario]['TRIMESTRE'].unique()
+trimestres_disponibles.sort()
+trimestre_usuario = st.selectbox("Seleccione el trimestre", trimestres_disponibles)
 if anio_usuario in hogares_disponibles and trimestre_usuario in hogares_disponibles[anio_usuario]:
     st.success(f"✅ Hay datos disponibles para el año {anio_usuario} y trimestre {trimestre_usuario}.")
 else:

@@ -138,7 +138,7 @@ m = folium.Map(location=[-38, -64], zoom_start=4.5)
 for aglomerado, valores in tasas.items():
     if aglomerado not in coordenadas_aglomerados:
         continue  # Saltea si no hay coordenadas para ese aglomerado
-
+    #extrae las coordenadas y el nombre del aglomerado
     coord = coordenadas_aglomerados[aglomerado]["coordenadas"]
     nombre = coordenadas_aglomerados[aglomerado]["nombre"]
 
@@ -163,6 +163,6 @@ for aglomerado, valores in tasas.items():
         popup=popup_text
     ).add_to(m)
 
-st_folium(m, width=700, height=500)
+st_folium(m, width=700, height=500,returned_objects=[])
 
 st.caption(f"Fuente: EPH-INDEC | Años disponibles: {', '.join(str(a) for a in anos_disponibles)}")
