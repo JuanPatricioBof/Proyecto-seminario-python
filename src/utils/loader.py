@@ -72,11 +72,11 @@ def obtener_fechas_comunes(json_hogares, json_individuos):
     try:
         with open(json_hogares, 'r') as f:
             hogares = {int(año): [int(t) for t in trimestres] 
-                    for año, trimestres in json.load(f).items()}
+                    for año, trimestres in json.load(f).items()}#Conversion a int
         
         with open(json_individuos, 'r') as f:
             individuos = {int(año): [int(t) for t in trimestres] 
-                        for año, trimestres in json.load(f).items()}
+                        for año, trimestres in json.load(f).items()}#Conversion a int
 
         # Encontrar coincidencias
         fechas_comunes = []

@@ -9,7 +9,8 @@ from src.dataset.agregar_columnas import generar_columnas_csv_individual,generar
 from src.utils.loader import cargar_fechas_correspondencia_en_session
 
 st.title("📁 Carga de datos")  # Título principal de la página
-
+st.markdown("Sitio oficial del INDEC para descargar trimestres")
+st.link_button("Ir al EPH","https://www.indec.gob.ar/indec/web/Institucional-Indec-BasesDeDatos",icon="📄")
 ## ----------------------------
 ## SECCIÓN 1: VERIFICACIÓN INICIAL DE ARCHIVOS
 ## ----------------------------

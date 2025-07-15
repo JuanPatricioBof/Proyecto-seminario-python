@@ -36,7 +36,7 @@ def crear_grafico_barras(conteo, año):
         color=colores,
         edgecolor='white'
     )
-
+     #Estilizado
      # Ejes y título con estilo
      ax.set_title(f"Nivel Educativo - Año {año}", fontsize=16, weight='bold', pad=20, color='white')
      ax.set_xlabel("Nivel Educativo", fontsize=12, color='white')
@@ -184,7 +184,7 @@ def graficar_nivel_mas_comun_ordinal(df_resultado):
 
     ax.set_title("Nivel Educativo Más Común por Intervalo Etario", color='white', fontsize=14, pad=15)
     ax.set_xlabel("Nivel Educativo", color='white')
-
+    # Itera sobre cada barra del gráfico y añade una etiqueta de texto al lado de cada barra, mostrando el nivel educativo correspondiente.
     for i, bar in enumerate(barras):
         ancho = bar.get_width()
         ax.text(ancho + 0.1, bar.get_y() + bar.get_height()/2,
@@ -228,10 +228,13 @@ def ranking_aglomerado_EJ4(df_ind: pd.DataFrame, df_hog: pd.DataFrame, diccionar
         df_merged["tiene_2_o_mas"] = df_merged["universitarios_ponderados"] >= 2
 
         # Agrupar por aglomerado con ponderación
+        # Agrupar el DataFrame df_merged por la columna "AGLOMERADO" para calcular estadísticas agregadas.
         resumen = df_merged.groupby("AGLOMERADO").agg(
+            # Calcular el total de hogares ponderados en cada aglomerado sumando la columna "PONDERA".
             total_hogares=("PONDERA", "sum"),
+            # Calcular el total de hogares calificados (con 2 o más universitarios) sumando la ponderación de aquellos que cumplen la condición.
             hogares_calificados=("tiene_2_o_mas", lambda x: df_merged.loc[x.index, "PONDERA"].where(x).sum())
-        ).reset_index()
+        ).reset_index()# Restablecer el índice para convertir "AGLOMERADO" en una columna normal.
 
         # Calcular porcentaje
         resumen["porcentaje"] = (resumen["hogares_calificados"] / resumen["total_hogares"]) * 100

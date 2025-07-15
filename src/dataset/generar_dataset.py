@@ -73,7 +73,7 @@ def join_data():
         except ValueError as e:
             continue
 
-        if patron_hogar in path_archivo.name.lower(): # TODO Cambiar
+        if patron_hogar in path_archivo.name.lower(): 
             header_actual = next(eph_actual)
             primer_registro = next(eph_actual)
             if primer_header_hogar is None:
